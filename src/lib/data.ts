@@ -18,6 +18,7 @@ export interface Task {
   roles: Record<RoleType, RoleSchedule>
   docLink: string
   needsUi?: boolean
+  created_at?: string
 }
 
 export interface TabItem {
@@ -40,6 +41,29 @@ export const PRIORITY_CONFIG: Record<Priority, { label: string; className: strin
   P1: { label: 'P1', className: 'bg-status-blocked text-status-blocked-foreground' },
   P2: { label: 'P2', className: 'bg-status-progress text-status-progress-foreground' },
   P3: { label: 'P3', className: 'bg-status-pending text-status-pending-foreground' },
+}
+
+export const CLASSIFICATION_ORDER: string[] = [
+  '章节更新',
+  '链条-更新',
+  '移植-商业化',
+  '换皮-活动',
+  '移植-活动',
+  '创新活动',
+  '优化',
+  '其他',
+]
+
+const classificationIndex = (classification: string): number => {
+  const i = CLASSIFICATION_ORDER.indexOf(classification)
+  return i === -1 ? CLASSIFICATION_ORDER.length : i
+}
+
+export function compareTaskOrder(a: Task, b: Task): number {
+  const ci = classificationIndex(a.classification) - classificationIndex(b.classification)
+  if (ci !== 0) return ci
+  // 同分类内：新建的在前 → created_at 降序
+  return (b.created_at ?? '').localeCompare(a.created_at ?? '')
 }
 
 export const CLASSIFICATION_COLORS: Record<string, { bg: string; text: string }> = {

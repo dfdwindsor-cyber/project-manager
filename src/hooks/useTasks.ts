@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase, fromDbTask, toDbTask } from '@/lib/supabase'
 import type { DbTaskRow } from '@/lib/supabase'
 import { toast } from '@/components/Toast'
-import { STATUS_CONFIG, createEmptyRoles } from '@/lib/data'
+import { STATUS_CONFIG, createEmptyRoles, compareTaskOrder } from '@/lib/data'
 import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
 
 export function useTasks(activeTab: string) {
@@ -31,7 +31,9 @@ export function useTasks(activeTab: string) {
           console.error('Failed to fetch tasks:', error)
           toast('加载任务失败', 'error')
         } else {
-          setTasks((data ?? []).map((row) => fromDbTask(row as DbTaskRow)))
+          const parsed = (data ?? []).map((row) => fromDbTask(row as DbTaskRow))
+          parsed.sort(compareTaskOrder)
+          setTasks(parsed)
         }
         setIsLoading(false)
       }
@@ -60,12 +62,12 @@ export function useTasks(activeTab: string) {
             const task = fromDbTask(payload.new as DbTaskRow)
             setTasks((prev) => {
               if (prev.some((t) => t.id === task.id)) return prev
-              return [...prev, task]
+              return [...prev, task].sort(compareTaskOrder)
             })
           } else if (payload.eventType === 'UPDATE') {
             const task = fromDbTask(payload.new as DbTaskRow)
             setTasks((prev) =>
-              prev.map((t) => (t.id === task.id ? task : t))
+              [...prev.map((t) => (t.id === task.id ? task : t))].sort(compareTaskOrder)
             )
           } else if (payload.eventType === 'DELETE') {
             const old = payload.old as { id: string }
@@ -82,9 +84,10 @@ export function useTasks(activeTab: string) {
 
   const addTask = useCallback(async (taskData: Omit<Task, 'id'>) => {
     const id = Date.now().toString()
-    const newTask: Task = { ...taskData, id }
-    // 乐观更新
-    setTasks((prev) => [newTask, ...prev])
+    const nowIso = new Date().toISOString()
+    const newTask: Task = { ...taskData, id, created_at: nowIso }
+    // 乐观更新：按分类+新建在前 排序后插入正确位置
+    setTasks((prev) => [...prev, newTask].sort(compareTaskOrder))
     const { error } = await supabase.from('tasks').insert(toDbTask(newTask))
     if (error) {
       console.error('Failed to add task:', error)

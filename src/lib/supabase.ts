@@ -41,6 +41,7 @@ export function fromDbTask(row: DbTaskRow): Task {
     },
     docLink: row.doc_link,
     needsUi: Boolean(_needsUi),
+    created_at: row.created_at,
   }
 }
 
