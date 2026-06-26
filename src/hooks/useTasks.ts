@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase, fromDbTask, toDbTask } from '@/lib/supabase'
 import type { DbTaskRow } from '@/lib/supabase'
 import { toast } from '@/components/Toast'
-import { STATUS_CONFIG } from '@/lib/data'
+import { STATUS_CONFIG, createEmptyRoles } from '@/lib/data'
 import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
 
 export function useTasks(activeTab: string) {
@@ -130,7 +130,7 @@ export function useTasks(activeTab: string) {
     })
   }, [])
 
-  const updateTask = useCallback(async (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink'>>) => {
+  const updateTask = useCallback(async (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink' | 'needsUi'>>) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
     )
@@ -140,6 +140,10 @@ export function useTasks(activeTab: string) {
     if (updates.classification !== undefined) dbUpdates.classification = updates.classification
     if (updates.status !== undefined) dbUpdates.status = updates.status
     if (updates.docLink !== undefined) dbUpdates.doc_link = updates.docLink
+    if (updates.needsUi !== undefined) {
+      const task = tasks.find((t) => t.id === taskId)
+      dbUpdates.roles = { ...(task?.roles ?? createEmptyRoles()), _needsUi: updates.needsUi }
+    }
 
     const { error } = await supabase
       .from('tasks')
@@ -151,7 +155,7 @@ export function useTasks(activeTab: string) {
     } else {
       toast('任务已更新')
     }
-  }, [])
+  }, [tasks])
 
   const deleteTask = useCallback(async (taskId: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId))

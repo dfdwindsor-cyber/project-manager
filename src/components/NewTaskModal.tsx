@@ -33,6 +33,7 @@ export function NewTaskModal({ isOpen, onClose, onSubmit, category }: NewTaskMod
   const [priority, setPriority] = useState<Priority>('P1')
   const [classification, setClassification] = useState(CLASSIFICATIONS[0])
   const [docLink, setDocLink] = useState('')
+  const [needsUi, setNeedsUi] = useState(false)
 
   if (!isOpen) return null
 
@@ -47,12 +48,14 @@ export function NewTaskModal({ isOpen, onClose, onSubmit, category }: NewTaskMod
       category,
       roles: createEmptyRoles(),
       docLink: docLink.trim(),
+      needsUi,
     })
     setName('')
     setStatus('not_started')
     setPriority('P1')
     setClassification(CLASSIFICATIONS[0])
     setDocLink('')
+    setNeedsUi(false)
     onClose()
   }
 
@@ -118,6 +121,17 @@ export function NewTaskModal({ isOpen, onClose, onSubmit, category }: NewTaskMod
           <p className="text-xs text-muted-foreground">
             创建后展开任务行可填写各工种（策划 / UI / 数值 / 研发 / 测试）的排期
           </p>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={needsUi}
+              onChange={(e) => setNeedsUi(e.target.checked)}
+              className="w-4 h-4 rounded border-input accent-emerald-500"
+            />
+            <span className="text-sm font-medium text-foreground">是否需要 UI</span>
+            <span className="text-xs text-muted-foreground">（勾选后任务名显示为绿色）</span>
+          </label>
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">文档链接</label>

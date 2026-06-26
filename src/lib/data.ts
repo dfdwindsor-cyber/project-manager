@@ -17,6 +17,7 @@ export interface Task {
   status: TaskStatus
   roles: Record<RoleType, RoleSchedule>
   docLink: string
+  needsUi?: boolean
 }
 
 export interface TabItem {

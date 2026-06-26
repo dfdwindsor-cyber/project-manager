@@ -162,7 +162,10 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onDelete, onEdit
                     'w-3 h-3 text-muted-foreground shrink-0 transition-default',
                     isExpanded && 'rotate-90'
                   )} />
-                  <span className="text-sm truncate font-medium">{task.name}</span>
+                  <span className={cn(
+                    'text-sm truncate font-medium',
+                    task.needsUi && 'text-emerald-600'
+                  )}>{task.name}</span>
                 </div>
 
                 {/* Priority */}
