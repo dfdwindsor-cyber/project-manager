@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { StatusDropdown } from '@/components/StatusDropdown'
 import { RoleSchedulePanel } from '@/components/RoleSchedulePanel'
@@ -8,12 +8,13 @@ import { Avatar } from '@/components/Avatar'
 import { useAuth } from '@/lib/auth'
 import { PRIORITY_CONFIG, ROLE_LIST, STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration } from '@/lib/data'
 import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
-import { ChevronRight, Plus, Trash2, ExternalLink } from 'lucide-react'
+import { ChevronRight, Plus, Trash2, ExternalLink, MessageSquare } from 'lucide-react'
 
 interface TaskListProps {
   tasks: Task[]
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void
   onRoleChange: (taskId: string, role: RoleType, schedule: RoleSchedule) => void
+  onRemarkChange?: (taskId: string, remark: string) => void
   onDelete?: (taskId: string) => void
   onEditTask?: (task: Task) => void
 }
@@ -52,7 +53,40 @@ function RoleCell({ schedule, color }: { schedule: RoleSchedule; color: string }
   )
 }
 
-export function TaskList({ tasks, onStatusChange, onRoleChange, onDelete, onEditTask }: TaskListProps) {
+function RemarkField({ taskId, value, onChange }: { taskId: string; value: string; onChange: (taskId: string, remark: string) => void }) {
+  const [local, setLocal] = useState(value)
+  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const v = e.target.value
+    setLocal(v)
+    if (timer) clearTimeout(timer)
+    const t = setTimeout(() => {
+      onChange(taskId, v)
+    }, 600)
+    setTimer(t)
+  }
+
+  useEffect(() => () => { if (timer) clearTimeout(timer) }, [timer])
+
+  return (
+    <div className="border-t border-border bg-accent/30 px-4 py-3 animate-fade-in">
+      <label className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+        <MessageSquare className="w-2.5 h-2.5" />
+        备注
+      </label>
+      <textarea
+        value={local}
+        onChange={handleChange}
+        placeholder="填写备注内容..."
+        rows={2}
+        className="w-full px-2 py-1.5 rounded border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-default resize-y"
+      />
+    </div>
+  )
+}
+
+export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, onDelete, onEditTask }: TaskListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const { isAdmin } = useAuth()
@@ -257,10 +291,20 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onDelete, onEdit
 
               {/* Expanded edit panel */}
               {isExpanded && (
-                <RoleSchedulePanel
-                  roles={task.roles}
-                  onChange={(role, schedule) => onRoleChange(task.id, role, schedule)}
-                />
+                <>
+                  <RoleSchedulePanel
+                    roles={task.roles}
+                    onChange={(role, schedule) => onRoleChange(task.id, role, schedule)}
+                  />
+                  {onRemarkChange && (
+                    <RemarkField
+                      key={task.id}
+                      taskId={task.id}
+                      value={task.remark ?? ''}
+                      onChange={onRemarkChange}
+                    />
+                  )}
+                </>
               )}
             </div>
           )

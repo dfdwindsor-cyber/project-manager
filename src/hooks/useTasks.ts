@@ -120,10 +120,10 @@ export function useTasks(activeTab: string) {
       return prev.map((t) => {
         if (t.id !== taskId) return t
         const newRoles = { ...t.roles, [roleType]: schedule }
-        // 异步更新数据库
+        // 异步更新数据库（roles 含 _needsUi / _remark 等元键，整体写入）
         supabase
           .from('tasks')
-          .update({ roles: newRoles })
+          .update({ roles: { ...newRoles, _needsUi: t.needsUi ?? false, _remark: t.remark ?? '' } })
           .eq('id', taskId)
           .then(({ error }) => {
             if (error) console.error('Failed to update role:', error)
@@ -171,5 +171,19 @@ export function useTasks(activeTab: string) {
     }
   }, [])
 
-  return { tasks, addTask, updateStatus, updateRole, updateTask, deleteTask, isLoading }
+  const updateRemark = useCallback(async (taskId: string, remark: string) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, remark } : t))
+    )
+    const task = tasks.find((t) => t.id === taskId)
+    const { error } = await supabase
+      .from('tasks')
+      .update({ roles: { ...(task?.roles ?? createEmptyRoles()), _needsUi: task?.needsUi ?? false, _remark: remark } })
+      .eq('id', taskId)
+    if (error) {
+      console.error('Failed to update remark:', error)
+    }
+  }, [tasks])
+
+  return { tasks, addTask, updateStatus, updateRole, updateTask, updateRemark, deleteTask, isLoading }
 }

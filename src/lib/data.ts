@@ -18,6 +18,7 @@ export interface Task {
   roles: Record<RoleType, RoleSchedule>
   docLink: string
   needsUi?: boolean
+  remark?: string
   created_at?: string
 }
 

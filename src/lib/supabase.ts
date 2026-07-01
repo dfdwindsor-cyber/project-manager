@@ -15,7 +15,7 @@ export interface DbTaskRow {
   classification: string
   priority: string
   status: string
-  roles: Record<RoleType, RoleSchedule> & { _needsUi?: boolean }
+  roles: Record<RoleType, RoleSchedule> & { _needsUi?: boolean; _remark?: string }
   doc_link: string
   created_at: string
 }
@@ -24,7 +24,7 @@ const emptyRole = (): RoleSchedule => ({ assignee: '', startDate: '', endDate: '
 
 export function fromDbTask(row: DbTaskRow): Task {
   const roles = row.roles ?? {}
-  const { _needsUi, ...roleSchedules } = roles as Record<string, unknown>
+  const { _needsUi, _remark, ...roleSchedules } = roles as Record<string, unknown>
   return {
     id: row.id,
     name: row.name,
@@ -41,6 +41,7 @@ export function fromDbTask(row: DbTaskRow): Task {
     },
     docLink: row.doc_link,
     needsUi: Boolean(_needsUi),
+    remark: typeof _remark === 'string' ? _remark : '',
     created_at: row.created_at,
   }
 }
@@ -53,7 +54,7 @@ export function toDbTask(task: Omit<Task, 'id'> & { id?: string }) {
     classification: task.classification,
     priority: task.priority,
     status: task.status,
-    roles: { ...task.roles, _needsUi: task.needsUi ?? false },
+    roles: { ...task.roles, _needsUi: task.needsUi ?? false, _remark: task.remark ?? '' },
     doc_link: task.docLink,
   }
 }
