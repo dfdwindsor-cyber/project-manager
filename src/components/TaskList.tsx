@@ -8,7 +8,7 @@ import { Avatar } from '@/components/Avatar'
 import { useAuth } from '@/lib/auth'
 import { PRIORITY_CONFIG, ROLE_LIST, STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration } from '@/lib/data'
 import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
-import { ChevronRight, Plus, Trash2, ExternalLink, MessageSquare } from 'lucide-react'
+import { ChevronRight, Plus, Trash2, ExternalLink } from 'lucide-react'
 
 interface TaskListProps {
   tasks: Task[]
@@ -70,18 +70,14 @@ function RemarkField({ taskId, value, onChange }: { taskId: string; value: strin
   useEffect(() => () => { if (timer) clearTimeout(timer) }, [timer])
 
   return (
-    <div className="px-3 pb-2 pt-1 border-t border-border/50 bg-accent/20">
-      <div className="flex items-start gap-1.5">
-        <MessageSquare className="w-3 h-3 text-muted-foreground mt-1 shrink-0" />
-        <textarea
-          value={local}
-          onChange={handleChange}
-          placeholder="添加备注..."
-          rows={1}
-          className="flex-1 px-2 py-1 rounded border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-default resize-y min-h-[24px]"
-        />
-      </div>
-    </div>
+    <textarea
+      value={local}
+      onChange={handleChange}
+      onClick={(e) => e.stopPropagation()}
+      placeholder="添加备注..."
+      rows={1}
+      className="w-full px-1.5 py-1 rounded border border-transparent bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring focus:border-input focus:bg-background transition-default resize-y min-h-[24px] max-h-24"
+    />
   )
 }
 
@@ -142,7 +138,7 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id))
 
-  const gridCols = 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_60px_minmax(80px,1fr)_60px]'
+  const gridCols = 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_60px_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
 
   return (
     <div className="flex-1 overflow-auto">
@@ -164,6 +160,7 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
         ))}
         <span className="text-xs font-medium text-muted-foreground">总工期</span>
         <span className="text-xs font-medium text-muted-foreground">文档</span>
+        <span className="text-xs font-medium text-muted-foreground">备注</span>
         <span className="text-xs font-medium text-muted-foreground">操作</span>
       </div>
 
@@ -266,6 +263,22 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
                   )}
                 </div>
 
+                {/* 备注 */}
+                <div className="min-w-0">
+                  {onRemarkChange ? (
+                    <RemarkField
+                      key={task.id}
+                      taskId={task.id}
+                      value={task.remark ?? ''}
+                      onChange={onRemarkChange}
+                    />
+                  ) : (
+                    <span className="text-xs text-foreground/80 whitespace-pre-wrap break-words">
+                      {task.remark || '-'}
+                    </span>
+                  )}
+                </div>
+
                 {/* Actions */}
                 <div className="flex items-center gap-1">
                   <button
@@ -287,16 +300,6 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
                   )}
                 </div>
               </div>
-
-              {/* 备注行（始终可见） */}
-              {onRemarkChange && (
-                <RemarkField
-                  key={task.id}
-                  taskId={task.id}
-                  value={task.remark ?? ''}
-                  onChange={onRemarkChange}
-                />
-              )}
 
               {/* Expanded edit panel */}
               {isExpanded && (
