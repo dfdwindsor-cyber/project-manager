@@ -70,18 +70,17 @@ function RemarkField({ taskId, value, onChange }: { taskId: string; value: strin
   useEffect(() => () => { if (timer) clearTimeout(timer) }, [timer])
 
   return (
-    <div className="border-t border-border bg-accent/30 px-4 py-3 animate-fade-in">
-      <label className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
-        <MessageSquare className="w-2.5 h-2.5" />
-        备注
-      </label>
-      <textarea
-        value={local}
-        onChange={handleChange}
-        placeholder="填写备注内容..."
-        rows={2}
-        className="w-full px-2 py-1.5 rounded border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-default resize-y"
-      />
+    <div className="px-3 pb-2 pt-1 border-t border-border/50 bg-accent/20">
+      <div className="flex items-start gap-1.5">
+        <MessageSquare className="w-3 h-3 text-muted-foreground mt-1 shrink-0" />
+        <textarea
+          value={local}
+          onChange={handleChange}
+          placeholder="添加备注..."
+          rows={1}
+          className="flex-1 px-2 py-1 rounded border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-default resize-y min-h-[24px]"
+        />
+      </div>
     </div>
   )
 }
@@ -289,22 +288,22 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
                 </div>
               </div>
 
+              {/* 备注行（始终可见） */}
+              {onRemarkChange && (
+                <RemarkField
+                  key={task.id}
+                  taskId={task.id}
+                  value={task.remark ?? ''}
+                  onChange={onRemarkChange}
+                />
+              )}
+
               {/* Expanded edit panel */}
               {isExpanded && (
-                <>
-                  <RoleSchedulePanel
-                    roles={task.roles}
-                    onChange={(role, schedule) => onRoleChange(task.id, role, schedule)}
-                  />
-                  {onRemarkChange && (
-                    <RemarkField
-                      key={task.id}
-                      taskId={task.id}
-                      value={task.remark ?? ''}
-                      onChange={onRemarkChange}
-                    />
-                  )}
-                </>
+                <RoleSchedulePanel
+                  roles={task.roles}
+                  onChange={(role, schedule) => onRoleChange(task.id, role, schedule)}
+                />
               )}
             </div>
           )
