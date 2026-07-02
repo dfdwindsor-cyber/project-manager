@@ -184,16 +184,16 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
               >
                 {/* Task name */}
                 <div
-                  className="flex items-center gap-1.5 min-w-0 cursor-pointer"
+                  className="flex items-start gap-1.5 min-w-0 cursor-pointer py-0.5"
                   onClick={() => toggle(task.id)}
                   onDoubleClick={(e) => { e.stopPropagation(); onEditTask?.(task) }}
                 >
                   <ChevronRight className={cn(
-                    'w-3 h-3 text-muted-foreground shrink-0 transition-default',
+                    'w-3 h-3 text-muted-foreground shrink-0 transition-default mt-0.5',
                     isExpanded && 'rotate-90'
                   )} />
                   <span className={cn(
-                    'text-sm truncate font-medium',
+                    'text-sm font-medium whitespace-pre-wrap break-words leading-snug',
                     task.needsUi && 'text-emerald-600'
                   )}>{task.name}</span>
                 </div>
