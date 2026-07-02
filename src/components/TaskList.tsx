@@ -6,7 +6,7 @@ import { ColumnFilter } from '@/components/ColumnFilter'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Avatar } from '@/components/Avatar'
 import { useAuth } from '@/lib/auth'
-import { PRIORITY_CONFIG, ROLE_LIST, STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration } from '@/lib/data'
+import { PRIORITY_CONFIG, ROLE_LIST, STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration, isTaskOverdue } from '@/lib/data'
 import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
 import { ChevronRight, Plus, Trash2, ExternalLink } from 'lucide-react'
 
@@ -188,6 +188,12 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
                   onClick={() => toggle(task.id)}
                   onDoubleClick={(e) => { e.stopPropagation(); onEditTask?.(task) }}
                 >
+                  {isTaskOverdue(task) && (
+                    <span
+                      className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 mt-1.5 animate-pulse"
+                      title="研发排期已过期，任务未进入测试"
+                    />
+                  )}
                   <ChevronRight className={cn(
                     'w-3 h-3 text-muted-foreground shrink-0 transition-default mt-0.5',
                     isExpanded && 'rotate-90'

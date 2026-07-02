@@ -206,6 +206,24 @@ export function calcTotalDuration(roles: Record<RoleType, RoleSchedule>): string
   return `${days}天`
 }
 
+/**
+ * 判断任务是否预警：研发（dev）排期结束日期已过，且状态还未进入测试或完成阶段
+ * 判定为"已进入测试/完成"的状态：func_testing / testing / planner_review / test_done
+ */
+export function isTaskOverdue(task: Task): boolean {
+  const devEnd = task.roles?.dev?.endDate
+  if (!devEnd) return false
+  const end = parseFlexDate(devEnd)
+  if (!end) return false
+  // 比较到"日"，忽略时分秒
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+  if (today <= endDay) return false
+  const doneStates: TaskStatus[] = ['func_testing', 'testing', 'planner_review', 'test_done']
+  return !doneStates.includes(task.status)
+}
+
 function parseFlexDate(input: string): Date | null {
   const trimmed = input.trim().replace(/[./]/g, '-')
   // ISO format "2026-04-16"
