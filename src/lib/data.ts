@@ -149,14 +149,32 @@ export function createEmptyRoles(): Record<RoleType, RoleSchedule> {
   return { planner: emptyRole(), ui: emptyRole(), numerical: emptyRole(), dev: emptyRole(), test: emptyRole() }
 }
 
+/**
+ * 计算从 start 到 end 之间跨越的工作日天数（含端点，排除周六周日）
+ * 起止同一天且为工作日 → 0（"当天"）；起止差 N 个工作日 → N
+ */
+function workdayDiff(start: Date, end: Date): number {
+  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+  const e = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+  if (e < s) return -1
+  let count = 0
+  const cursor = new Date(s)
+  cursor.setDate(cursor.getDate() + 1) // 从 start 次日开始累加，保持"当天=0"语义
+  while (cursor <= e) {
+    const day = cursor.getDay()
+    if (day !== 0 && day !== 6) count++
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return count
+}
+
 export function calcDuration(startDate: string, endDate: string): string {
   if (!startDate || !endDate) return '-'
   const s = parseFlexDate(startDate)
   const e = parseFlexDate(endDate)
   if (!s || !e) return '-'
-  const diff = e.getTime() - s.getTime()
-  if (diff < 0) return '-'
-  const days = Math.round(diff / (1000 * 60 * 60 * 24))
+  const days = workdayDiff(s, e)
+  if (days < 0) return '-'
   if (days === 0) return '当天'
   return `${days}天`
 }
@@ -175,9 +193,8 @@ export function calcTotalDuration(roles: Record<RoleType, RoleSchedule>): string
     }
   }
   if (!earliest || !latest) return '-'
-  const diff = latest.getTime() - earliest.getTime()
-  if (diff < 0) return '-'
-  const days = Math.round(diff / (1000 * 60 * 60 * 24))
+  const days = workdayDiff(earliest, latest)
+  if (days < 0) return '-'
   if (days === 0) return '当天'
   return `${days}天`
 }
