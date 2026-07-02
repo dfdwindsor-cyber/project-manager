@@ -1,4 +1,4 @@
-export type TaskStatus = 'not_started' | 'developing' | 'func_testing' | 'testing' | 'planner_review' | 'test_done'
+export type TaskStatus = 'not_started' | 'data_ready' | 'developing' | 'numerical_done' | 'func_testing' | 'testing' | 'planner_review' | 'test_done'
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3'
 export type RoleType = 'planner' | 'ui' | 'numerical' | 'dev' | 'test'
 
@@ -78,16 +78,24 @@ export const CLASSIFICATION_COLORS: Record<string, { bg: string; text: string }>
   '其他': { bg: 'bg-gray-100', text: 'text-gray-600' },
 }
 
-export const STATUS_LIST: TaskStatus[] = ['not_started', 'developing', 'func_testing', 'testing', 'planner_review', 'test_done']
+export const STATUS_LIST: TaskStatus[] = ['not_started', 'data_ready', 'developing', 'numerical_done', 'func_testing', 'testing', 'planner_review', 'test_done']
 
 export const STATUS_CONFIG: Record<TaskStatus, { label: string; className: string }> = {
   not_started: {
     label: '待开始',
     className: 'bg-status-pending text-status-pending-foreground',
   },
+  data_ready: {
+    label: '数据准备好',
+    className: 'bg-indigo-100 text-indigo-700',
+  },
   developing: {
     label: '开发中',
     className: 'bg-status-progress text-status-progress-foreground',
+  },
+  numerical_done: {
+    label: '数值完成',
+    className: 'bg-cyan-100 text-cyan-700',
   },
   func_testing: {
     label: '功能测试',

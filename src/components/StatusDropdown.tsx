@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { STATUS_CONFIG, STATUS_LIST, type TaskStatus } from '@/lib/data'
-import { ChevronDown, Circle, Loader2, FlaskConical, CheckCircle2, ClipboardCheck, UserCheck } from 'lucide-react'
+import { ChevronDown, Circle, Loader2, FlaskConical, CheckCircle2, ClipboardCheck, UserCheck, Database, Calculator } from 'lucide-react'
 
 const STATUS_ICONS: Record<TaskStatus, React.ReactNode> = {
   not_started: <Circle className="w-3.5 h-3.5" />,
+  data_ready: <Database className="w-3.5 h-3.5" />,
   developing: <Loader2 className="w-3.5 h-3.5" />,
+  numerical_done: <Calculator className="w-3.5 h-3.5" />,
   func_testing: <ClipboardCheck className="w-3.5 h-3.5" />,
   testing: <FlaskConical className="w-3.5 h-3.5" />,
   planner_review: <UserCheck className="w-3.5 h-3.5" />,
@@ -14,7 +16,9 @@ const STATUS_ICONS: Record<TaskStatus, React.ReactNode> = {
 
 const STATUS_DOT_CLASSES: Record<TaskStatus, string> = {
   not_started: 'bg-status-pending/20 text-status-pending',
+  data_ready: 'bg-indigo-100 text-indigo-700',
   developing: 'bg-status-progress/20 text-status-progress',
+  numerical_done: 'bg-cyan-100 text-cyan-700',
   func_testing: 'bg-status-func-testing/20 text-status-func-testing',
   testing: 'bg-status-blocked/20 text-status-blocked',
   planner_review: 'bg-status-planner-review/20 text-status-planner-review',

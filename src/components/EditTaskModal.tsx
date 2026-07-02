@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
-import { PRIORITY_LIST } from '@/lib/data'
+import { PRIORITY_LIST, STATUS_LIST, STATUS_CONFIG } from '@/lib/data'
 import type { Task, TaskStatus, Priority } from '@/lib/data'
 
 interface EditTaskModalProps {
@@ -10,14 +10,7 @@ interface EditTaskModalProps {
   onSubmit: (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink' | 'needsUi'>>) => void
 }
 
-const STATUSES: { value: TaskStatus; label: string }[] = [
-  { value: 'not_started', label: '待开始' },
-  { value: 'developing', label: '开发中' },
-  { value: 'func_testing', label: '功能测试' },
-  { value: 'testing', label: '测试中' },
-  { value: 'planner_review', label: '策划验收' },
-  { value: 'test_done', label: '测试结束' },
-]
+const STATUSES: { value: TaskStatus; label: string }[] = STATUS_LIST.map((s) => ({ value: s, label: STATUS_CONFIG[s].label }))
 
 const CLASSIFICATIONS = [
   '章节更新', '链条-更新', '移植-商业化', '换皮-活动',
