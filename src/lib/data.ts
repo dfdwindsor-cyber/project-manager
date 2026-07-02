@@ -150,8 +150,8 @@ export function createEmptyRoles(): Record<RoleType, RoleSchedule> {
 }
 
 /**
- * 计算从 start 到 end 之间跨越的工作日天数（含端点，排除周六周日）
- * 起止同一天且为工作日 → 0（"当天"）；起止差 N 个工作日 → N
+ * 计算 start ~ end 之间的工作日天数（含起止两端，排除周六周日）
+ * 起止同一天工作日 → 1；7/7(周二)~7/9(周四) → 3；周五~下周一 → 2
  */
 function workdayDiff(start: Date, end: Date): number {
   const s = new Date(start.getFullYear(), start.getMonth(), start.getDate())
@@ -159,7 +159,6 @@ function workdayDiff(start: Date, end: Date): number {
   if (e < s) return -1
   let count = 0
   const cursor = new Date(s)
-  cursor.setDate(cursor.getDate() + 1) // 从 start 次日开始累加，保持"当天=0"语义
   while (cursor <= e) {
     const day = cursor.getDay()
     if (day !== 0 && day !== 6) count++
@@ -175,7 +174,7 @@ export function calcDuration(startDate: string, endDate: string): string {
   if (!s || !e) return '-'
   const days = workdayDiff(s, e)
   if (days < 0) return '-'
-  if (days === 0) return '当天'
+  if (days === 0) return '-'
   return `${days}天`
 }
 
@@ -195,7 +194,7 @@ export function calcTotalDuration(roles: Record<RoleType, RoleSchedule>): string
   if (!earliest || !latest) return '-'
   const days = workdayDiff(earliest, latest)
   if (days < 0) return '-'
-  if (days === 0) return '当天'
+  if (days === 0) return '-'
   return `${days}天`
 }
 
