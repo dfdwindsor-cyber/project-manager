@@ -7,7 +7,7 @@ import type { Task, TaskStatus, Priority } from '@/lib/data'
 interface EditTaskModalProps {
   task: Task | null
   onClose: () => void
-  onSubmit: (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink' | 'needsUi'>>) => void
+  onSubmit: (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink' | 'needsUi' | 'needsOps'>>) => void
 }
 
 const STATUSES: { value: TaskStatus; label: string }[] = STATUS_LIST.map((s) => ({ value: s, label: STATUS_CONFIG[s].label }))
@@ -26,6 +26,7 @@ export function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
   const [classification, setClassification] = useState(CLASSIFICATIONS[0])
   const [docLink, setDocLink] = useState('')
   const [needsUi, setNeedsUi] = useState(false)
+  const [needsOps, setNeedsOps] = useState(false)
 
   useEffect(() => {
     if (task) {
@@ -35,6 +36,7 @@ export function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
       setClassification(task.classification)
       setDocLink(task.docLink || '')
       setNeedsUi(task.needsUi ?? false)
+      setNeedsOps(task.needsOps ?? false)
     }
   }, [task])
 
@@ -50,6 +52,7 @@ export function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
       classification,
       docLink: docLink.trim(),
       needsUi,
+      needsOps,
     })
     onClose()
   }
@@ -133,6 +136,17 @@ export function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
             />
             <span className="text-sm font-medium text-foreground">是否需要 UI</span>
             <span className="text-xs text-muted-foreground">（勾选后任务名显示为绿色）</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={needsOps}
+              onChange={(e) => setNeedsOps(e.target.checked)}
+              className="w-4 h-4 rounded border-input accent-purple-500"
+            />
+            <span className="text-sm font-medium text-foreground">是否需要运营</span>
+            <span className="text-xs text-muted-foreground">（勾选后列表显示运营排期列）</span>
           </label>
 
           <div className="flex justify-end gap-2 pt-2">

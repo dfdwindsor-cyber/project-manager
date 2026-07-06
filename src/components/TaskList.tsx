@@ -6,14 +6,17 @@ import { ColumnFilter } from '@/components/ColumnFilter'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Avatar } from '@/components/Avatar'
 import { useAuth } from '@/lib/auth'
-import { PRIORITY_CONFIG, ROLE_LIST, STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration, isTaskOverdue } from '@/lib/data'
+import { PRIORITY_CONFIG, ROLE_LIST, OPS_ROLE, STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration, isTaskOverdue } from '@/lib/data'
 import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
 import { ChevronRight, Plus, Trash2, ExternalLink } from 'lucide-react'
+
+const EMPTY_SCHEDULE: RoleSchedule = { assignee: '', startDate: '', endDate: '' }
 
 interface TaskListProps {
   tasks: Task[]
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void
   onRoleChange: (taskId: string, role: RoleType, schedule: RoleSchedule) => void
+  onOpsChange?: (taskId: string, schedule: RoleSchedule) => void
   onRemarkChange?: (taskId: string, remark: string) => void
   onDelete?: (taskId: string) => void
   onEditTask?: (task: Task) => void
@@ -81,7 +84,7 @@ function RemarkField({ taskId, value, onChange }: { taskId: string; value: strin
   )
 }
 
-export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, onDelete, onEditTask }: TaskListProps) {
+export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onRemarkChange, onDelete, onEditTask }: TaskListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const { isAdmin } = useAuth()
@@ -138,7 +141,12 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id))
 
-  const gridCols = 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_60px_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
+  // 当前 tab 内存在「需要运营」的任务时，显示运营排期列
+  const showOps = tasks.some((t) => t.needsOps)
+
+  const gridCols = showOps
+    ? 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_minmax(110px,1fr)_60px_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
+    : 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_60px_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
 
   return (
     <div className="flex-1 overflow-auto">
@@ -158,6 +166,12 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
             colorDot={r.color}
           />
         ))}
+        {showOps && (
+          <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: OPS_ROLE.color }} />
+            {OPS_ROLE.label}
+          </span>
+        )}
         <span className="text-xs font-medium text-muted-foreground">总工期</span>
         <span className="text-xs font-medium text-muted-foreground">文档</span>
         <span className="text-xs font-medium text-muted-foreground">备注</span>
@@ -229,12 +243,23 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
                   {task.classification}
                 </span>
 
-                {/* 4 Role columns */}
+                {/* 5 Role columns */}
                 {ROLE_LIST.map((r) => (
                   <div key={r.key} className="min-w-0">
                     <RoleCell schedule={task.roles[r.key]} color={r.color} />
                   </div>
                 ))}
+
+                {/* 运营排期列（按需显示） */}
+                {showOps && (
+                  <div className="min-w-0">
+                    {task.needsOps ? (
+                      <RoleCell schedule={task.opsSchedule ?? EMPTY_SCHEDULE} color={OPS_ROLE.color} />
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </div>
+                )}
 
                 {/* Total duration */}
                 <span className={cn(
@@ -312,6 +337,9 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onRemarkChange, 
                 <RoleSchedulePanel
                   roles={task.roles}
                   onChange={(role, schedule) => onRoleChange(task.id, role, schedule)}
+                  needsOps={task.needsOps}
+                  opsSchedule={task.opsSchedule ?? EMPTY_SCHEDULE}
+                  onOpsChange={onOpsChange ? (schedule) => onOpsChange(task.id, schedule) : undefined}
                 />
               )}
             </div>

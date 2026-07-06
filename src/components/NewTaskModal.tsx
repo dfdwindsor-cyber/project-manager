@@ -27,6 +27,7 @@ export function NewTaskModal({ isOpen, onClose, onSubmit, category }: NewTaskMod
   const [classification, setClassification] = useState(CLASSIFICATIONS[0])
   const [docLink, setDocLink] = useState('')
   const [needsUi, setNeedsUi] = useState(false)
+  const [needsOps, setNeedsOps] = useState(false)
 
   if (!isOpen) return null
 
@@ -42,6 +43,7 @@ export function NewTaskModal({ isOpen, onClose, onSubmit, category }: NewTaskMod
       roles: createEmptyRoles(),
       docLink: docLink.trim(),
       needsUi,
+      needsOps,
     })
     setName('')
     setStatus('not_started')
@@ -49,6 +51,7 @@ export function NewTaskModal({ isOpen, onClose, onSubmit, category }: NewTaskMod
     setClassification(CLASSIFICATIONS[0])
     setDocLink('')
     setNeedsUi(false)
+    setNeedsOps(false)
     onClose()
   }
 
@@ -124,6 +127,17 @@ export function NewTaskModal({ isOpen, onClose, onSubmit, category }: NewTaskMod
             />
             <span className="text-sm font-medium text-foreground">是否需要 UI</span>
             <span className="text-xs text-muted-foreground">（勾选后任务名显示为绿色）</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={needsOps}
+              onChange={(e) => setNeedsOps(e.target.checked)}
+              className="w-4 h-4 rounded border-input accent-purple-500"
+            />
+            <span className="text-sm font-medium text-foreground">是否需要运营</span>
+            <span className="text-xs text-muted-foreground">（勾选后列表显示运营排期列）</span>
           </label>
 
           <div className="space-y-1.5">

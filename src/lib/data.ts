@@ -18,9 +18,14 @@ export interface Task {
   roles: Record<RoleType, RoleSchedule>
   docLink: string
   needsUi?: boolean
+  needsOps?: boolean
+  opsSchedule?: RoleSchedule
   remark?: string
   created_at?: string
 }
+
+/** 运营排期列（按需显示，独立于常驻 5 个工种 ROLE_LIST） */
+export const OPS_ROLE = { label: '运营排期', color: 'hsl(280, 60%, 55%)' }
 
 export interface TabItem {
   id: string

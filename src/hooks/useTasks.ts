@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase, fromDbTask, toDbTask } from '@/lib/supabase'
+import { supabase, fromDbTask, toDbTask, packRoles } from '@/lib/supabase'
 import type { DbTaskRow } from '@/lib/supabase'
 import { toast } from '@/components/Toast'
 import { STATUS_CONFIG, createEmptyRoles, compareTaskOrder } from '@/lib/data'
@@ -119,21 +119,38 @@ export function useTasks(activeTab: string) {
     setTasks((prev) => {
       return prev.map((t) => {
         if (t.id !== taskId) return t
-        const newRoles = { ...t.roles, [roleType]: schedule }
-        // 异步更新数据库（roles 含 _needsUi / _remark 等元键，整体写入）
+        const updated = { ...t, roles: { ...t.roles, [roleType]: schedule } }
+        // 异步更新数据库（roles 含 _needsUi / _remark / _needsOps / _opsSchedule 等元键，整体写入）
         supabase
           .from('tasks')
-          .update({ roles: { ...newRoles, _needsUi: t.needsUi ?? false, _remark: t.remark ?? '' } })
+          .update({ roles: packRoles(updated) })
           .eq('id', taskId)
           .then(({ error }) => {
             if (error) console.error('Failed to update role:', error)
           })
-        return { ...t, roles: newRoles }
+        return updated
       })
     })
   }, [])
 
-  const updateTask = useCallback(async (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink' | 'needsUi'>>) => {
+  const updateOps = useCallback(async (taskId: string, schedule: RoleSchedule) => {
+    setTasks((prev) => {
+      return prev.map((t) => {
+        if (t.id !== taskId) return t
+        const updated = { ...t, opsSchedule: schedule }
+        supabase
+          .from('tasks')
+          .update({ roles: packRoles(updated) })
+          .eq('id', taskId)
+          .then(({ error }) => {
+            if (error) console.error('Failed to update ops schedule:', error)
+          })
+        return updated
+      })
+    })
+  }, [])
+
+  const updateTask = useCallback(async (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink' | 'needsUi' | 'needsOps'>>) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
     )
@@ -143,9 +160,11 @@ export function useTasks(activeTab: string) {
     if (updates.classification !== undefined) dbUpdates.classification = updates.classification
     if (updates.status !== undefined) dbUpdates.status = updates.status
     if (updates.docLink !== undefined) dbUpdates.doc_link = updates.docLink
-    if (updates.needsUi !== undefined) {
+    // needsUi / needsOps 存放在 roles JSONB 的元键里，任一变更都整体重写 roles
+    if (updates.needsUi !== undefined || updates.needsOps !== undefined) {
       const task = tasks.find((t) => t.id === taskId)
-      dbUpdates.roles = { ...(task?.roles ?? createEmptyRoles()), _needsUi: updates.needsUi }
+      const merged = { ...(task ?? { roles: createEmptyRoles() }), ...updates } as Task
+      dbUpdates.roles = packRoles(merged)
     }
 
     const { error } = await supabase
@@ -176,14 +195,15 @@ export function useTasks(activeTab: string) {
       prev.map((t) => (t.id === taskId ? { ...t, remark } : t))
     )
     const task = tasks.find((t) => t.id === taskId)
+    const merged = { ...(task ?? { roles: createEmptyRoles() }), remark } as Task
     const { error } = await supabase
       .from('tasks')
-      .update({ roles: { ...(task?.roles ?? createEmptyRoles()), _needsUi: task?.needsUi ?? false, _remark: remark } })
+      .update({ roles: packRoles(merged) })
       .eq('id', taskId)
     if (error) {
       console.error('Failed to update remark:', error)
     }
   }, [tasks])
 
-  return { tasks, addTask, updateStatus, updateRole, updateTask, updateRemark, deleteTask, isLoading }
+  return { tasks, addTask, updateStatus, updateRole, updateOps, updateTask, updateRemark, deleteTask, isLoading }
 }
