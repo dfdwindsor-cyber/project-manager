@@ -158,8 +158,17 @@ function emptyRole(): RoleSchedule {
   return { assignee: '', startDate: '', endDate: '' }
 }
 
+/** 数值模块负责人固定为剑心（唯一数值人员），新建任务时默认写入 */
+export const DEFAULT_NUMERICAL_ASSIGNEE = '剑心'
+
 export function createEmptyRoles(): Record<RoleType, RoleSchedule> {
-  return { planner: emptyRole(), ui: emptyRole(), numerical: emptyRole(), dev: emptyRole(), test: emptyRole() }
+  return {
+    planner: emptyRole(),
+    ui: emptyRole(),
+    numerical: { assignee: DEFAULT_NUMERICAL_ASSIGNEE, startDate: '', endDate: '' },
+    dev: emptyRole(),
+    test: emptyRole(),
+  }
 }
 
 /**
