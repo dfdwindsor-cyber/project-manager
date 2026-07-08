@@ -3,7 +3,7 @@ import { supabase, fromDbTask, toDbTask, packRoles } from '@/lib/supabase'
 import type { DbTaskRow } from '@/lib/supabase'
 import { toast } from '@/components/Toast'
 import { STATUS_CONFIG, createEmptyRoles, compareTaskOrder } from '@/lib/data'
-import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
+import type { Task, TaskStatus, RoleType, RoleSchedule, NumericalStatus } from '@/lib/data'
 
 export function useTasks(activeTab: string) {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -150,6 +150,23 @@ export function useTasks(activeTab: string) {
     })
   }, [])
 
+  const updateNumericalStatus = useCallback(async (taskId: string, numericalStatus: NumericalStatus) => {
+    setTasks((prev) => {
+      return prev.map((t) => {
+        if (t.id !== taskId) return t
+        const updated = { ...t, numericalStatus }
+        supabase
+          .from('tasks')
+          .update({ roles: packRoles(updated) })
+          .eq('id', taskId)
+          .then(({ error }) => {
+            if (error) console.error('Failed to update numerical status:', error)
+          })
+        return updated
+      })
+    })
+  }, [])
+
   const updateTask = useCallback(async (taskId: string, updates: Partial<Pick<Task, 'name' | 'priority' | 'classification' | 'status' | 'docLink' | 'needsUi' | 'needsOps'>>) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
@@ -205,5 +222,5 @@ export function useTasks(activeTab: string) {
     }
   }, [tasks])
 
-  return { tasks, addTask, updateStatus, updateRole, updateOps, updateTask, updateRemark, deleteTask, isLoading }
+  return { tasks, addTask, updateStatus, updateRole, updateOps, updateNumericalStatus, updateTask, updateRemark, deleteTask, isLoading }
 }

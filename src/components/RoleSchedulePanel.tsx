@@ -1,9 +1,43 @@
 import { useState, useRef, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/Avatar'
-import { ROLE_LIST, ROLE_MEMBERS, OPS_ROLE, calcDuration, toISODate, fromISODate, formatDateDisplay } from '@/lib/data'
-import type { RoleType, RoleSchedule } from '@/lib/data'
-import { Calendar, User, Clock } from 'lucide-react'
+import { ROLE_LIST, ROLE_MEMBERS, OPS_ROLE, NUMERICAL_STATUS_LIST, NUMERICAL_STATUS_CONFIG, calcDuration, toISODate, fromISODate, formatDateDisplay } from '@/lib/data'
+import type { RoleType, RoleSchedule, NumericalStatus } from '@/lib/data'
+import { Calendar, User, Clock, Sigma } from 'lucide-react'
+
+/** 数值状态选择器：无 / 临时数值 / 正式数值，显示在数值排期上方 */
+function NumericalStatusSelect({ value, onChange }: { value: NumericalStatus; onChange: (v: NumericalStatus) => void }) {
+  return (
+    <div className="space-y-1">
+      <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <Sigma className="w-2.5 h-2.5" />
+        数值状态
+      </label>
+      <div className="flex flex-wrap gap-1">
+        {NUMERICAL_STATUS_LIST.map((s) => {
+          const cfg = NUMERICAL_STATUS_CONFIG[s]
+          const active = s === value
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onChange(s)}
+              className={cn(
+                'px-1.5 py-0.5 rounded text-[10px] font-medium border transition-default',
+                active
+                  ? cn(cfg.className, 'border-transparent ring-1 ring-ring')
+                  : 'bg-background text-muted-foreground border-input hover:bg-surface-hover'
+              )}
+            >
+              {cfg.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 /**
  * 负责人输入框：兼容中文输入法。
@@ -69,6 +103,8 @@ interface RoleSchedulePanelProps {
   needsOps?: boolean
   opsSchedule?: RoleSchedule
   onOpsChange?: (schedule: RoleSchedule) => void
+  numericalStatus?: NumericalStatus
+  onNumericalStatusChange?: (status: NumericalStatus) => void
 }
 
 interface ScheduleCardProps {
@@ -80,9 +116,11 @@ interface ScheduleCardProps {
   showDates: boolean
   onAssignee: (value: string) => void
   onDate: (field: 'startDate' | 'endDate', isoValue: string) => void
+  /** 若提供，则用它替代默认的「负责人」区域（数值列用来放状态选择器） */
+  assigneeContent?: ReactNode
 }
 
-function ScheduleCard({ label, color, schedule, members, listId, showDates, onAssignee, onDate }: ScheduleCardProps) {
+function ScheduleCard({ label, color, schedule, members, listId, showDates, onAssignee, onDate, assigneeContent }: ScheduleCardProps) {
   const dur = showDates ? calcDuration(schedule.startDate, schedule.endDate) : '-'
   const isoStart = toISODate(schedule.startDate)
   const isoEnd = toISODate(schedule.endDate)
@@ -100,22 +138,24 @@ function ScheduleCard({ label, color, schedule, members, listId, showDates, onAs
         )}
       </div>
 
-      {/* Assignee */}
-      <div className="space-y-1">
-        <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <User className="w-2.5 h-2.5" />
-          负责人
-        </label>
-        <div className="flex items-center gap-1.5">
-          {schedule.assignee && <Avatar name={schedule.assignee} size="sm" />}
-          <AssigneeInput
-            value={schedule.assignee}
-            members={members}
-            listId={listId}
-            onCommit={onAssignee}
-          />
+      {/* Assignee（数值列改为数值状态选择器） */}
+      {assigneeContent !== undefined ? assigneeContent : (
+        <div className="space-y-1">
+          <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <User className="w-2.5 h-2.5" />
+            负责人
+          </label>
+          <div className="flex items-center gap-1.5">
+            {schedule.assignee && <Avatar name={schedule.assignee} size="sm" />}
+            <AssigneeInput
+              value={schedule.assignee}
+              members={members}
+              listId={listId}
+              onCommit={onAssignee}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Date fields */}
       {showDates && (
@@ -165,7 +205,7 @@ function ScheduleCard({ label, color, schedule, members, listId, showDates, onAs
   )
 }
 
-export function RoleSchedulePanel({ roles, onChange, needsOps, opsSchedule, onOpsChange }: RoleSchedulePanelProps) {
+export function RoleSchedulePanel({ roles, onChange, needsOps, opsSchedule, onOpsChange, numericalStatus, onNumericalStatusChange }: RoleSchedulePanelProps) {
   const showOps = Boolean(needsOps && onOpsChange && opsSchedule)
 
   const handleOpsAssignee = (value: string) => onOpsChange?.({ ...(opsSchedule as RoleSchedule), assignee: value })
@@ -186,6 +226,12 @@ export function RoleSchedulePanel({ roles, onChange, needsOps, opsSchedule, onOp
             showDates={role.key !== 'planner'}
             onAssignee={(value) => onChange(role.key, { ...roles[role.key], assignee: value })}
             onDate={(field, iso) => onChange(role.key, { ...roles[role.key], [field]: iso ? fromISODate(iso) : '' })}
+            assigneeContent={role.key === 'numerical' ? (
+              <NumericalStatusSelect
+                value={numericalStatus ?? 'none'}
+                onChange={(s) => onNumericalStatusChange?.(s)}
+              />
+            ) : undefined}
           />
         ))}
 

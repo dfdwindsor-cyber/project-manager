@@ -38,7 +38,7 @@ function AppContent() {
     }
   }, [tabs, archivedTabs, activeTab])
 
-  const { tasks, addTask, updateStatus, updateRole, updateOps, updateTask, updateRemark, deleteTask, isLoading: tasksLoading } = useTasks(activeTab)
+  const { tasks, addTask, updateStatus, updateRole, updateOps, updateNumericalStatus, updateTask, updateRemark, deleteTask, isLoading: tasksLoading } = useTasks(activeTab)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const handleAddTab = useCallback(async (label: string) => {
@@ -217,6 +217,7 @@ function AppContent() {
               onStatusChange={updateStatus}
               onRoleChange={updateRole}
               onOpsChange={updateOps}
+              onNumericalStatusChange={updateNumericalStatus}
               onRemarkChange={updateRemark}
               onDelete={deleteTask}
               onEditTask={setEditingTask}

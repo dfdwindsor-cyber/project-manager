@@ -1,6 +1,7 @@
 export type TaskStatus = 'not_started' | 'data_ready' | 'developing' | 'numerical_done' | 'func_testing' | 'testing' | 'planner_review' | 'test_done'
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3'
 export type RoleType = 'planner' | 'ui' | 'numerical' | 'dev' | 'test'
+export type NumericalStatus = 'none' | 'temp' | 'formal'
 
 export interface RoleSchedule {
   assignee: string
@@ -20,12 +21,22 @@ export interface Task {
   needsUi?: boolean
   needsOps?: boolean
   opsSchedule?: RoleSchedule
+  /** 数值状态：无 / 临时数值 / 正式数值，显示在数值排期上方 */
+  numericalStatus?: NumericalStatus
   remark?: string
   created_at?: string
 }
 
 /** 运营排期列（按需显示，独立于常驻 5 个工种 ROLE_LIST） */
 export const OPS_ROLE = { label: '运营排期', color: 'hsl(280, 60%, 55%)' }
+
+/** 数值状态候选与展示配置 */
+export const NUMERICAL_STATUS_LIST: NumericalStatus[] = ['none', 'temp', 'formal']
+export const NUMERICAL_STATUS_CONFIG: Record<NumericalStatus, { label: string; className: string }> = {
+  none: { label: '无', className: 'bg-gray-100 text-gray-500' },
+  temp: { label: '临时数值', className: 'bg-amber-100 text-amber-700' },
+  formal: { label: '正式数值', className: 'bg-emerald-100 text-emerald-700' },
+}
 
 export interface TabItem {
   id: string

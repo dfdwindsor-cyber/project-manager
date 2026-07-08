@@ -6,17 +6,39 @@ import { ColumnFilter } from '@/components/ColumnFilter'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Avatar } from '@/components/Avatar'
 import { useAuth } from '@/lib/auth'
-import { PRIORITY_CONFIG, ROLE_LIST, OPS_ROLE, STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration, isTaskOverdue } from '@/lib/data'
-import type { Task, TaskStatus, RoleType, RoleSchedule } from '@/lib/data'
+import { PRIORITY_CONFIG, ROLE_LIST, OPS_ROLE, STATUS_CONFIG, NUMERICAL_STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration, isTaskOverdue } from '@/lib/data'
+import type { Task, TaskStatus, RoleType, RoleSchedule, NumericalStatus } from '@/lib/data'
 import { ChevronRight, Plus, Trash2, ExternalLink } from 'lucide-react'
 
 const EMPTY_SCHEDULE: RoleSchedule = { assignee: '', startDate: '', endDate: '' }
+
+/** 数值列：显示数值状态（无/临时/正式）+ 时间，不显示负责人 */
+function NumericalCell({ status, schedule, color }: { status: NumericalStatus; schedule: RoleSchedule; color: string }) {
+  const cfg = NUMERICAL_STATUS_CONFIG[status]
+  const start = formatDateDisplay(schedule.startDate)
+  const end = formatDateDisplay(schedule.endDate)
+  const hasDates = start || end
+  if (status === 'none' && !hasDates) return <span className="text-muted-foreground">-</span>
+  return (
+    <div className="flex flex-col gap-0.5 items-start">
+      <span className={cn('inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium', cfg.className)}>
+        {cfg.label}
+      </span>
+      {hasDates && (
+        <span className="text-[10px] leading-tight" style={{ color }}>
+          {start || '?'} ~ {end || '?'}
+        </span>
+      )}
+    </div>
+  )
+}
 
 interface TaskListProps {
   tasks: Task[]
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void
   onRoleChange: (taskId: string, role: RoleType, schedule: RoleSchedule) => void
   onOpsChange?: (taskId: string, schedule: RoleSchedule) => void
+  onNumericalStatusChange?: (taskId: string, status: NumericalStatus) => void
   onRemarkChange?: (taskId: string, remark: string) => void
   onDelete?: (taskId: string) => void
   onEditTask?: (task: Task) => void
@@ -84,7 +106,7 @@ function RemarkField({ taskId, value, onChange }: { taskId: string; value: strin
   )
 }
 
-export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onRemarkChange, onDelete, onEditTask }: TaskListProps) {
+export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onNumericalStatusChange, onRemarkChange, onDelete, onEditTask }: TaskListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const { isAdmin } = useAuth()
@@ -113,7 +135,7 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onR
       status: [...new Set(tasks.map((t) => STATUS_CONFIG[t.status].label))].sort(),
       planner: roleAssignees('planner'),
       ui: roleAssignees('ui'),
-      numerical: roleAssignees('numerical'),
+      numerical: [...new Set(tasks.map((t) => NUMERICAL_STATUS_CONFIG[t.numericalStatus ?? 'none'].label))].sort(),
       dev: roleAssignees('dev'),
       test: roleAssignees('test'),
     }
@@ -128,7 +150,7 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onR
       if (filters.status.size > 0 && !filters.status.has(STATUS_CONFIG[t.status].label)) return false
       if (filters.planner.size > 0 && !filters.planner.has(t.roles.planner.assignee)) return false
       if (filters.ui.size > 0 && !filters.ui.has(t.roles.ui.assignee)) return false
-      if (filters.numerical.size > 0 && !filters.numerical.has(t.roles.numerical.assignee)) return false
+      if (filters.numerical.size > 0 && !filters.numerical.has(NUMERICAL_STATUS_CONFIG[t.numericalStatus ?? 'none'].label)) return false
       if (filters.dev.size > 0 && !filters.dev.has(t.roles.dev.assignee)) return false
       if (filters.test.size > 0 && !filters.test.has(t.roles.test.assignee)) return false
       return true
@@ -243,10 +265,14 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onR
                   {task.classification}
                 </span>
 
-                {/* 5 Role columns */}
+                {/* 5 Role columns（数值列显示数值状态+时间，不显示负责人） */}
                 {ROLE_LIST.map((r) => (
                   <div key={r.key} className="min-w-0">
-                    <RoleCell schedule={task.roles[r.key]} color={r.color} />
+                    {r.key === 'numerical' ? (
+                      <NumericalCell status={task.numericalStatus ?? 'none'} schedule={task.roles.numerical} color={r.color} />
+                    ) : (
+                      <RoleCell schedule={task.roles[r.key]} color={r.color} />
+                    )}
                   </div>
                 ))}
 
@@ -340,6 +366,8 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onR
                   needsOps={task.needsOps}
                   opsSchedule={task.opsSchedule ?? EMPTY_SCHEDULE}
                   onOpsChange={onOpsChange ? (schedule) => onOpsChange(task.id, schedule) : undefined}
+                  numericalStatus={task.numericalStatus ?? 'none'}
+                  onNumericalStatusChange={onNumericalStatusChange ? (status) => onNumericalStatusChange(task.id, status) : undefined}
                 />
               )}
             </div>
