@@ -101,7 +101,7 @@ function RemarkField({ taskId, value, onChange }: { taskId: string; value: strin
       onClick={(e) => e.stopPropagation()}
       placeholder="添加备注..."
       rows={1}
-      className="w-full px-1.5 py-1 rounded border border-transparent bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring focus:border-input focus:bg-background transition-default resize-y min-h-[24px] max-h-24"
+      className="w-full px-1.5 py-1 rounded border border-transparent bg-transparent text-xs text-red-600 placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring focus:border-input focus:bg-background transition-default resize-y min-h-[24px] max-h-24"
     />
   )
 }
@@ -334,7 +334,7 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onN
                       onChange={onRemarkChange}
                     />
                   ) : (
-                    <span className="text-xs text-foreground/80 whitespace-pre-wrap break-words">
+                    <span className="text-xs text-red-600 whitespace-pre-wrap break-words">
                       {task.remark || '-'}
                     </span>
                   )}
