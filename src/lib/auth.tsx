@@ -8,6 +8,9 @@ interface AuthContextValue {
   isAdmin: boolean
   isLoading: boolean
   adminToken: string | null
+  /** 当前用户自选的身份（姓名），用于“策划本人可删自己任务”等按人判断，存本机 */
+  currentUser: string | null
+  setCurrentUser: (name: string | null) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -19,6 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [adminToken, setAdminToken] = useState<string | null>(null)
+  const [currentUser, setCurrentUserState] = useState<string | null>(
+    () => localStorage.getItem('pm_current_user') || null
+  )
+
+  const setCurrentUser = (name: string | null) => {
+    setCurrentUserState(name)
+    if (name) localStorage.setItem('pm_current_user', name)
+    else localStorage.removeItem('pm_current_user')
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -65,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ role, isAdmin: role === 'admin', isLoading, adminToken }}>
+    <AuthContext.Provider value={{ role, isAdmin: role === 'admin', isLoading, adminToken, currentUser, setCurrentUser }}>
       {children}
     </AuthContext.Provider>
   )

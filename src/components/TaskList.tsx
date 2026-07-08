@@ -109,7 +109,11 @@ function RemarkField({ taskId, value, onChange }: { taskId: string; value: strin
 export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onNumericalStatusChange, onRemarkChange, onDelete, onEditTask }: TaskListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
-  const { isAdmin } = useAuth()
+  const { isAdmin, currentUser } = useAuth()
+
+  // 管理员可删所有；策划本人可删自己作为策划负责人的任务
+  const canDelete = (task: Task) =>
+    isAdmin || (!!currentUser && task.roles.planner.assignee === currentUser)
   const [filters, setFilters] = useState<Filters>({
     name: new Set(),
     classification: new Set(),
@@ -345,7 +349,7 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onN
                   >
                     {isExpanded ? '收起' : '编辑'}
                   </button>
-                  {isAdmin && (
+                  {canDelete(task) && (
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: task.id, name: task.name }) }}

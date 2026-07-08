@@ -9,6 +9,7 @@ import { ToastContainer, toast } from '@/components/Toast'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { useTabs } from '@/hooks/useTabs'
 import { useTasks } from '@/hooks/useTasks'
+import { ALL_MEMBERS } from '@/lib/data'
 import type { Task } from '@/lib/data'
 import { Shield, ShieldCheck, Share2, Loader2 } from 'lucide-react'
 
@@ -21,7 +22,7 @@ function App() {
 }
 
 function AppContent() {
-  const { isAdmin, isLoading: authLoading, adminToken } = useAuth()
+  const { isAdmin, isLoading: authLoading, adminToken, currentUser, setCurrentUser } = useAuth()
   const { tabs, archivedTabs, addTab, archiveTab, restoreTab, renameTab, isLoading: tabsLoading } = useTabs()
   const [activeTab, setActiveTab] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -111,6 +112,21 @@ function AppContent() {
             <h1 className="text-base font-semibold">taylor</h1>
           </div>
           <div className="flex items-center gap-2">
+            {/* 我是谁：自选身份，用于“策划本人可删自己任务”判断 */}
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <span className="text-xs">我是</span>
+              <select
+                value={currentUser ?? ''}
+                onChange={(e) => setCurrentUser(e.target.value || null)}
+                className="h-8 px-2 rounded-md border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-default cursor-pointer"
+                title="选择你的身份，用于任务删除权限判断"
+              >
+                <option value="">未设置</option>
+                {ALL_MEMBERS.map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </label>
             <span
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md ${
                 isAdmin

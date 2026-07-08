@@ -165,6 +165,9 @@ export const ROLE_MEMBERS: Record<RoleType, string[]> = {
   test: ['番茄', '玲子', '暖树'],
 }
 
+/** 全部成员姓名（各工种去重合并），用于「我是谁」身份自选 */
+export const ALL_MEMBERS: string[] = [...new Set(Object.values(ROLE_MEMBERS).flat())].sort()
+
 function emptyRole(): RoleSchedule {
   return { assignee: '', startDate: '', endDate: '' }
 }
