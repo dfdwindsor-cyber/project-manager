@@ -1,7 +1,7 @@
 export type TaskStatus = 'not_started' | 'data_ready' | 'developing' | 'numerical_done' | 'func_testing' | 'testing' | 'planner_review' | 'test_done'
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3'
 export type RoleType = 'planner' | 'ui' | 'numerical' | 'dev' | 'test'
-export type NumericalStatus = 'none' | 'temp' | 'formal'
+export type NumericalStatus = 'none' | 'temp' | 'formal' | 'ported'
 
 export interface RoleSchedule {
   assignee: string
@@ -31,11 +31,12 @@ export interface Task {
 export const OPS_ROLE = { label: '运营排期', color: 'hsl(280, 60%, 55%)' }
 
 /** 数值状态候选与展示配置 */
-export const NUMERICAL_STATUS_LIST: NumericalStatus[] = ['none', 'temp', 'formal']
+export const NUMERICAL_STATUS_LIST: NumericalStatus[] = ['none', 'temp', 'formal', 'ported']
 export const NUMERICAL_STATUS_CONFIG: Record<NumericalStatus, { label: string; className: string }> = {
   none: { label: '无', className: 'bg-gray-100 text-gray-500' },
   temp: { label: '临时数值', className: 'bg-amber-100 text-amber-700' },
   formal: { label: '正式数值', className: 'bg-emerald-100 text-emerald-700' },
+  ported: { label: '移植数值', className: 'bg-sky-100 text-sky-700' },
 }
 
 export interface TabItem {
