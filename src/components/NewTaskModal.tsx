@@ -14,7 +14,7 @@ interface NewTaskModalProps {
 const STATUSES: { value: TaskStatus; label: string }[] = STATUS_LIST.map((s) => ({ value: s, label: STATUS_CONFIG[s].label }))
 
 const CLASSIFICATIONS = [
-  '章节更新', '链条-更新', '移植-商业化', '换皮-活动',
+  '章节更新', '链条-更新', '创新商业化', '移植-商业化', '换皮-活动',
   '移植-活动', '创新活动', '优化', '其他',
 ]
 

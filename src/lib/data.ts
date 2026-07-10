@@ -64,6 +64,7 @@ export const PRIORITY_CONFIG: Record<Priority, { label: string; className: strin
 export const CLASSIFICATION_ORDER: string[] = [
   '章节更新',
   '链条-更新',
+  '创新商业化',
   '移植-商业化',
   '换皮-活动',
   '移植-活动',
@@ -87,6 +88,7 @@ export function compareTaskOrder(a: Task, b: Task): number {
 export const CLASSIFICATION_COLORS: Record<string, { bg: string; text: string }> = {
   '章节更新': { bg: 'bg-emerald-100', text: 'text-emerald-700' },
   '链条-更新': { bg: 'bg-teal-100', text: 'text-teal-700' },
+  '创新商业化': { bg: 'bg-fuchsia-100', text: 'text-fuchsia-700' },
   '移植-商业化': { bg: 'bg-violet-100', text: 'text-violet-700' },
   '换皮-活动': { bg: 'bg-amber-100', text: 'text-amber-700' },
   '移植-活动': { bg: 'bg-orange-100', text: 'text-orange-700' },
