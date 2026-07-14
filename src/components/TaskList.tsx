@@ -6,7 +6,7 @@ import { ColumnFilter } from '@/components/ColumnFilter'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Avatar } from '@/components/Avatar'
 import { useAuth } from '@/lib/auth'
-import { PRIORITY_CONFIG, ROLE_LIST, OPS_ROLE, STATUS_CONFIG, NUMERICAL_STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, calcTotalDuration, isTaskOverdue } from '@/lib/data'
+import { PRIORITY_CONFIG, ROLE_LIST, OPS_ROLE, VFX_ROLE, STATUS_CONFIG, NUMERICAL_STATUS_CONFIG, CLASSIFICATION_COLORS, formatDateDisplay, isTaskOverdue } from '@/lib/data'
 import type { Task, TaskStatus, RoleType, RoleSchedule, NumericalStatus } from '@/lib/data'
 import { ChevronRight, Plus, Trash2, ExternalLink } from 'lucide-react'
 
@@ -171,8 +171,8 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onN
   const showOps = tasks.some((t) => t.needsOps)
 
   const gridCols = showOps
-    ? 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_minmax(110px,1fr)_60px_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
-    : 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_60px_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
+    ? 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_minmax(110px,1fr)_minmax(100px,1fr)_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
+    : 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_minmax(100px,1fr)_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
 
   return (
     <div className="flex-1 overflow-auto">
@@ -198,7 +198,10 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onN
             {OPS_ROLE.label}
           </span>
         )}
-        <span className="text-xs font-medium text-muted-foreground">总工期</span>
+        <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: VFX_ROLE.color }} />
+          {VFX_ROLE.label}
+        </span>
         <span className="text-xs font-medium text-muted-foreground">文档</span>
         <span className="text-xs font-medium text-muted-foreground">备注</span>
         <span className="text-xs font-medium text-muted-foreground">操作</span>
@@ -209,7 +212,6 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onN
         {filteredTasks.map((task, index) => {
           const isExpanded = expandedId === task.id
           const pConfig = PRIORITY_CONFIG[task.priority]
-          const totalDur = calcTotalDuration(task.roles)
 
           return (
             <div key={task.id} className="animate-fade-in" style={{ animationDelay: `${index * 12}ms` }}>
@@ -291,13 +293,10 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onN
                   </div>
                 )}
 
-                {/* Total duration */}
-                <span className={cn(
-                  'text-xs font-medium',
-                  totalDur === '-' ? 'text-muted-foreground' : 'text-foreground'
-                )}>
-                  {totalDur}
-                </span>
+                {/* 特效排期（常驻，替换原总工期列） */}
+                <div className="min-w-0">
+                  <RoleCell schedule={task.roles.vfx ?? EMPTY_SCHEDULE} color={VFX_ROLE.color} />
+                </div>
 
                 {/* Doc link */}
                 <div className="min-w-0">

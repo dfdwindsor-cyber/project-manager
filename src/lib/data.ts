@@ -1,6 +1,6 @@
 export type TaskStatus = 'not_started' | 'data_ready' | 'developing' | 'numerical_done' | 'func_testing' | 'testing' | 'planner_review' | 'test_done'
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3'
-export type RoleType = 'planner' | 'ui' | 'numerical' | 'dev' | 'test'
+export type RoleType = 'planner' | 'ui' | 'numerical' | 'dev' | 'test' | 'vfx'
 export type NumericalStatus = 'none' | 'temp' | 'formal' | 'ported'
 
 export interface RoleSchedule {
@@ -30,6 +30,9 @@ export interface Task {
 /** 运营排期列（按需显示，独立于常驻 5 个工种 ROLE_LIST） */
 export const OPS_ROLE = { label: '运营排期', color: 'hsl(280, 60%, 55%)' }
 
+/** 特效排期列：常驻显示，位置替换原「总工期」列 */
+export const VFX_ROLE: { key: RoleType; label: string; color: string } = { key: 'vfx', label: '特效', color: 'hsl(45, 75%, 48%)' }
+
 /** 数值状态候选与展示配置 */
 export const NUMERICAL_STATUS_LIST: NumericalStatus[] = ['none', 'temp', 'formal', 'ported']
 export const NUMERICAL_STATUS_CONFIG: Record<NumericalStatus, { label: string; className: string }> = {
@@ -44,7 +47,7 @@ export interface TabItem {
   label: string
 }
 
-export const ROLE_LIST: { key: RoleType; label: string; color: string }[] = [
+export const ROLE_LIST: { key: Exclude<RoleType, 'vfx'>; label: string; color: string }[] = [
   { key: 'planner', label: '策划', color: 'var(--role-planner)' },
   { key: 'ui', label: 'UI', color: 'var(--role-ui)' },
   { key: 'numerical', label: '数值', color: 'var(--role-numerical)' },
@@ -157,6 +160,7 @@ export const ASSIGNEE_COLORS: Record<string, string> = {
   '桐乐': 'hsl(15, 65%, 52%)',
   '小矛': 'hsl(240, 50%, 55%)',
   '柳二龙': 'hsl(160, 55%, 45%)',
+  '阿森': 'hsl(45, 70%, 50%)',
 }
 
 /** 每个工种对应的可选人员列表 */
@@ -166,6 +170,7 @@ export const ROLE_MEMBERS: Record<RoleType, string[]> = {
   numerical: ['剑心'],
   dev: ['陶侃', '京墨', '稻壳', '宋云'],
   test: ['番茄', '玲子', '暖树'],
+  vfx: ['阿森'],
 }
 
 /** 全部成员姓名（各工种去重合并），用于「我是谁」身份自选 */
@@ -178,6 +183,9 @@ function emptyRole(): RoleSchedule {
 /** 数值模块负责人固定为剑心（唯一数值人员），新建任务时默认写入 */
 export const DEFAULT_NUMERICAL_ASSIGNEE = '剑心'
 
+/** 特效负责人固定为阿森（唯一特效人员），默认写入、无需选择 */
+export const DEFAULT_VFX_ASSIGNEE = '阿森'
+
 export function createEmptyRoles(): Record<RoleType, RoleSchedule> {
   return {
     planner: emptyRole(),
@@ -185,6 +193,7 @@ export function createEmptyRoles(): Record<RoleType, RoleSchedule> {
     numerical: { assignee: DEFAULT_NUMERICAL_ASSIGNEE, startDate: '', endDate: '' },
     dev: emptyRole(),
     test: emptyRole(),
+    vfx: { assignee: DEFAULT_VFX_ASSIGNEE, startDate: '', endDate: '' },
   }
 }
 

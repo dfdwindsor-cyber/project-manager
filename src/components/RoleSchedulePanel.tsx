@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/Avatar'
-import { ROLE_LIST, ROLE_MEMBERS, OPS_ROLE, NUMERICAL_STATUS_LIST, NUMERICAL_STATUS_CONFIG, calcDuration, toISODate, fromISODate, formatDateDisplay } from '@/lib/data'
+import { ROLE_LIST, ROLE_MEMBERS, OPS_ROLE, VFX_ROLE, NUMERICAL_STATUS_LIST, NUMERICAL_STATUS_CONFIG, calcDuration, toISODate, fromISODate, formatDateDisplay } from '@/lib/data'
 import type { RoleType, RoleSchedule, NumericalStatus } from '@/lib/data'
 import { Calendar, User, Clock, Sigma } from 'lucide-react'
 
@@ -214,7 +214,7 @@ export function RoleSchedulePanel({ roles, onChange, needsOps, opsSchedule, onOp
 
   return (
     <div className="border-t border-border bg-accent/30 px-4 py-3 animate-fade-in">
-      <div className={cn('grid gap-3', showOps ? 'grid-cols-6' : 'grid-cols-5')}>
+      <div className={cn('grid gap-3', showOps ? 'grid-cols-7' : 'grid-cols-6')}>
         {ROLE_LIST.map((role) => (
           <ScheduleCard
             key={role.key}
@@ -247,6 +247,18 @@ export function RoleSchedulePanel({ roles, onChange, needsOps, opsSchedule, onOp
             onDate={handleOpsDate}
           />
         )}
+
+        {/* 特效排期：常驻显示，负责人固定阿森 */}
+        <ScheduleCard
+          label={VFX_ROLE.label}
+          color={VFX_ROLE.color}
+          schedule={roles.vfx}
+          members={ROLE_MEMBERS.vfx}
+          listId="members-vfx"
+          showDates
+          onAssignee={(value) => onChange('vfx', { ...roles.vfx, assignee: value })}
+          onDate={(field, iso) => onChange('vfx', { ...roles.vfx, [field]: iso ? fromISODate(iso) : '' })}
+        />
       </div>
     </div>
   )
