@@ -1,14 +1,14 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 
 export type UserRole = 'admin' | 'member'
+
+/** 选择该姓名即拥有管理员权限，不再通过链接/token 区分身份 */
+const ADMIN_NAME = '飞碟'
 
 interface AuthContextValue {
   role: UserRole
   isAdmin: boolean
-  isLoading: boolean
-  adminToken: string | null
-  /** 当前用户自选的身份（姓名），用于“策划本人可删自己任务”等按人判断，存本机 */
+  /** 当前用户自选的身份（姓名），用于管理员判断、"策划本人可删自己任务"等，存本机 */
   currentUser: string | null
   setCurrentUser: (name: string | null) => void
 }
@@ -16,12 +16,6 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<UserRole>(() => {
-    const cached = sessionStorage.getItem('pm_role')
-    return cached === 'admin' ? 'admin' : 'member'
-  })
-  const [isLoading, setIsLoading] = useState(true)
-  const [adminToken, setAdminToken] = useState<string | null>(null)
   const [currentUser, setCurrentUserState] = useState<string | null>(
     () => localStorage.getItem('pm_current_user') || null
   )
@@ -32,52 +26,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem('pm_current_user')
   }
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const urlRole = params.get('role')
-    const token = params.get('token')
-
-    if (urlRole === 'admin' && token) {
-      // 验证 admin token
-      supabase
-        .from('admin_tokens')
-        .select('token')
-        .eq('token', token)
-        .eq('is_active', true)
-        .single()
-        .then(({ data, error }) => {
-          if (data && !error) {
-            setRole('admin')
-            setAdminToken(token)
-            sessionStorage.setItem('pm_role', 'admin')
-            sessionStorage.setItem('pm_token', token)
-          } else {
-            setRole('member')
-            sessionStorage.removeItem('pm_role')
-            sessionStorage.removeItem('pm_token')
-          }
-          setIsLoading(false)
-        })
-    } else {
-      // 非 admin URL，检查 session 缓存
-      const cachedToken = sessionStorage.getItem('pm_token')
-      if (role === 'admin' && cachedToken) {
-        setAdminToken(cachedToken)
-      }
-      setIsLoading(false)
-    }
-
-    // 清除 URL 参数（保持 URL 简洁）
-    if (urlRole || token) {
-      const url = new URL(window.location.href)
-      url.searchParams.delete('role')
-      url.searchParams.delete('token')
-      window.history.replaceState({}, '', url.pathname)
-    }
-  }, [])
+  const isAdmin = currentUser === ADMIN_NAME
 
   return (
-    <AuthContext.Provider value={{ role, isAdmin: role === 'admin', isLoading, adminToken, currentUser, setCurrentUser }}>
+    <AuthContext.Provider value={{ role: isAdmin ? 'admin' : 'member', isAdmin, currentUser, setCurrentUser }}>
       {children}
     </AuthContext.Provider>
   )

@@ -5,13 +5,13 @@ import { TaskList } from '@/components/TaskList'
 import { NewTaskModal } from '@/components/NewTaskModal'
 import { EditTaskModal } from '@/components/EditTaskModal'
 import { HistorySidebar } from '@/components/HistorySidebar'
-import { ToastContainer, toast } from '@/components/Toast'
+import { ToastContainer } from '@/components/Toast'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { useTabs } from '@/hooks/useTabs'
 import { useTasks } from '@/hooks/useTasks'
 import { ALL_MEMBERS } from '@/lib/data'
 import type { Task } from '@/lib/data'
-import { Shield, ShieldCheck, Share2, Loader2 } from 'lucide-react'
+import { Shield, ShieldCheck, Loader2 } from 'lucide-react'
 
 function App() {
   return (
@@ -22,11 +22,10 @@ function App() {
 }
 
 function AppContent() {
-  const { isAdmin, isLoading: authLoading, adminToken, currentUser, setCurrentUser } = useAuth()
+  const { isAdmin, currentUser, setCurrentUser } = useAuth()
   const { tabs, archivedTabs, addTab, archiveTab, restoreTab, renameTab, isLoading: tabsLoading } = useTabs()
   const [activeTab, setActiveTab] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showSharePanel, setShowSharePanel] = useState(false)
 
   // 初始化 activeTab
   useEffect(() => {
@@ -74,22 +73,9 @@ function AppContent() {
     setIsModalOpen(false)
   }, [addTask])
 
-  const handleCopyLink = useCallback((type: 'admin' | 'member') => {
-    const origin = window.location.origin
-    let link: string
-    if (type === 'admin' && adminToken) {
-      link = `${origin}/?role=admin&token=${adminToken}`
-    } else {
-      link = `${origin}/?role=member`
-    }
-    navigator.clipboard.writeText(link).then(() => {
-      toast(type === 'admin' ? '管理员链接已复制' : '成员链接已复制')
-    })
-  }, [adminToken])
-
   const isViewingArchived = archivedTabs.some(t => t.id === activeTab)
 
-  if (authLoading || tabsLoading) {
+  if (tabsLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex items-center gap-3 text-muted-foreground">
@@ -137,39 +123,6 @@ function AppContent() {
               {isAdmin ? <ShieldCheck className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
               {isAdmin ? '管理员' : '成员'}
             </span>
-            {isAdmin && (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowSharePanel(!showSharePanel)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-default"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  分享
-                </button>
-                {showSharePanel && (
-                  <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-card rounded-lg border border-border shadow-elevated p-3 space-y-2 animate-fade-in">
-                    <p className="text-xs text-muted-foreground font-medium">复制邀请链接</p>
-                    <button
-                      type="button"
-                      onClick={() => { handleCopyLink('admin'); setShowSharePanel(false) }}
-                      className="w-full text-left px-2.5 py-1.5 text-xs rounded-md hover:bg-surface-hover transition-default"
-                    >
-                      <ShieldCheck className="w-3 h-3 inline mr-1.5 text-primary" />
-                      管理员链接
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { handleCopyLink('member'); setShowSharePanel(false) }}
-                      className="w-full text-left px-2.5 py-1.5 text-xs rounded-md hover:bg-surface-hover transition-default"
-                    >
-                      <Shield className="w-3 h-3 inline mr-1.5 text-muted-foreground" />
-                      成员链接
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
