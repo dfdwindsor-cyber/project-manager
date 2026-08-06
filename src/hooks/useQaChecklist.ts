@@ -236,7 +236,12 @@ export function useQaChecklist() {
     [currentUser]
   )
 
-  const hasUnchecked = useMemo(() => rows.some((r) => !r.done), [rows])
+  // 兜底：只有 18 行都存在且全部 done 时才算“无未完成”，
+  // 表未建 / 加载中 / 部分行缺失时都视为有未完成，保证红点能显示出来提醒。
+  const hasUnchecked = useMemo(
+    () => rows.length < QA_TOTAL_ROWS || rows.some((r) => !r.done),
+    [rows]
+  )
 
   return { rows, hasUnchecked, toggle, lastResetAt, isLoading }
 }

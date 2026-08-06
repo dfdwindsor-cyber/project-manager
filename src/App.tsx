@@ -128,7 +128,7 @@ function AppContent() {
               测试专用
               {qaHasUnchecked && (
                 <span
-                  className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 animate-pulse"
+                  className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-card animate-pulse"
                   title="有未完成的巡检项"
                 />
               )}
