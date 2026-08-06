@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Task, RoleType, RoleSchedule, NumericalStatus } from '@/lib/data'
-import { DEFAULT_VFX_ASSIGNEE } from '@/lib/data'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
@@ -61,8 +60,8 @@ export function fromDbTask(row: DbTaskRow): Task {
       numerical: (roleSchedules.numerical as RoleSchedule) ?? emptyRole(),
       dev: (roleSchedules.dev as RoleSchedule) ?? emptyRole(),
       test: (roleSchedules.test as RoleSchedule) ?? emptyRole(),
-      // 特效负责人固定为阿森：老任务没有 vfx 字段时也直接默认阿森，不需要手动补
-      vfx: (roleSchedules.vfx as RoleSchedule) ?? { assignee: DEFAULT_VFX_ASSIGNEE, startDate: '', endDate: '' },
+      // 特效负责人不再默认：老任务没有 vfx 字段时留空，跟其它工种一致
+      vfx: (roleSchedules.vfx as RoleSchedule) ?? emptyRole(),
     },
     docLink: row.doc_link,
     needsUi: Boolean(_needsUi),

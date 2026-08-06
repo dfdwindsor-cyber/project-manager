@@ -165,7 +165,7 @@ export const ASSIGNEE_COLORS: Record<string, string> = {
 
 /** 每个工种对应的可选人员列表 */
 export const ROLE_MEMBERS: Record<RoleType, string[]> = {
-  planner: ['克兰', '九梨', '婉仪', '回文', '摇光', '飞碟', '柳二龙', '沐月'],
+  planner: ['克兰', '九梨', '回文', '摇光', '飞碟', '柳二龙', '沐月'],
   ui: ['乌梅', '乐佩'],
   numerical: ['剑心'],
   dev: ['陶侃', '京墨', '稻壳', '宋云'],
@@ -183,9 +183,6 @@ function emptyRole(): RoleSchedule {
 /** 数值模块负责人固定为剑心（唯一数值人员），新建任务时默认写入 */
 export const DEFAULT_NUMERICAL_ASSIGNEE = '剑心'
 
-/** 特效负责人固定为阿森（唯一特效人员），默认写入、无需选择 */
-export const DEFAULT_VFX_ASSIGNEE = '阿森'
-
 export function createEmptyRoles(): Record<RoleType, RoleSchedule> {
   return {
     planner: emptyRole(),
@@ -193,7 +190,7 @@ export function createEmptyRoles(): Record<RoleType, RoleSchedule> {
     numerical: { assignee: DEFAULT_NUMERICAL_ASSIGNEE, startDate: '', endDate: '' },
     dev: emptyRole(),
     test: emptyRole(),
-    vfx: { assignee: DEFAULT_VFX_ASSIGNEE, startDate: '', endDate: '' },
+    vfx: emptyRole(),
   }
 }
 
