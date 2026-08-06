@@ -72,3 +72,51 @@ export function formatResetTime(iso: string): string {
   const mi = String(d.getMinutes()).padStart(2, '0')
   return `${mm}月${dd}日 ${hh}:${mi}`
 }
+
+/* ---------- 版本巡检（发版前，一个版本一份检查表；与「测试专用」独立） ---------- */
+
+export const QA_VERSIONS = ['pets', 'taylor', '合合'] as const
+export type QaVersion = (typeof QA_VERSIONS)[number]
+
+/** 每个版本对应的测试负责人 */
+export const VERSION_TESTER: Record<QaVersion, QaTester> = {
+  pets: '暖树',
+  taylor: '番茄',
+  合合: '玲子',
+}
+
+export interface QaVersionItem {
+  title: string
+  detail: string
+  /** 多条测试方法用 "\n" 分隔，模态渲染时会各占一行 */
+  method: string
+}
+
+export const QA_VERSION_ITEMS: readonly QaVersionItem[] = [
+  { title: '注册', detail: '安卓、iOS', method: '版本负责人，创建新号，确保基本功能没有问题' },
+  { title: '新手', detail: '安卓、iOS', method: '版本负责人，确保新手活动功能正常，没有不看' },
+  { title: '礼包', detail: '安卓、iOS', method: '礼包负责人，检查礼包，确保付费成功正常返回' },
+  { title: '广告', detail: '安卓、iOS', method: '版本负责人，观看成功，确保成功返回奖励增加' },
+  {
+    title: '排期',
+    detail: '安卓、iOS',
+    method: '版本负责人，测试排期，确保所有活动礼包正常\n活动负责人，结合排期，确保不同时间活动正常',
+  },
+  { title: '遗留', detail: '安卓、iOS', method: '跟进人确认，遗留问题，是否本次版本需要修改' },
+  { title: '代码', detail: '安卓、iOS', method: '活动负责人，与开发确认代码是否全合并到分支' },
+  { title: '崩溃', detail: '安卓、iOS', method: '让开发检查，后台崩溃，是否本次版本需要修改' },
+]
+
+export const QA_VERSION_TOTAL_ROWS = QA_VERSIONS.length * QA_VERSION_ITEMS.length
+
+export interface QaVersionRow {
+  id: string
+  version: QaVersion
+  item_idx: number
+  done: boolean
+  updated_at: string
+}
+
+export function qaVersionRowId(version: string, itemIdx: number): string {
+  return `${version}::${itemIdx}`
+}

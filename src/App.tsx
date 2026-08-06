@@ -7,13 +7,15 @@ import { EditTaskModal } from '@/components/EditTaskModal'
 import { HistorySidebar } from '@/components/HistorySidebar'
 import { ToastContainer } from '@/components/Toast'
 import { QaChecklistModal } from '@/components/QaChecklistModal'
+import { VersionQaModal } from '@/components/VersionQaModal'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { useTabs } from '@/hooks/useTabs'
 import { useTasks } from '@/hooks/useTasks'
 import { useQaChecklist } from '@/hooks/useQaChecklist'
+import { useVersionQa } from '@/hooks/useVersionQa'
 import { ALL_MEMBERS } from '@/lib/data'
 import type { Task } from '@/lib/data'
-import { Shield, ShieldCheck, Loader2, ClipboardCheck } from 'lucide-react'
+import { Shield, ShieldCheck, Loader2, ClipboardCheck, PackageCheck } from 'lucide-react'
 
 function App() {
   return (
@@ -27,9 +29,11 @@ function AppContent() {
   const { isAdmin, currentUser, setCurrentUser } = useAuth()
   const { tabs, archivedTabs, addTab, archiveTab, restoreTab, renameTab, isLoading: tabsLoading } = useTabs()
   const { rows: qaRows, hasUnchecked: qaHasUnchecked, uncheckedCount: qaUncheckedCount, toggle: toggleQa, lastResetAt: qaLastResetAt, isLoading: qaLoading } = useQaChecklist()
+  const { rows: vqaRows, toggle: toggleVersionQa, resetVersion: resetVersionQa, isLoading: vqaLoading } = useVersionQa()
   const [activeTab, setActiveTab] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isQaOpen, setIsQaOpen] = useState(false)
+  const [isVersionQaOpen, setIsVersionQaOpen] = useState(false)
 
   // 初始化 activeTab
   useEffect(() => {
@@ -132,6 +136,16 @@ function AppContent() {
                   title={qaUncheckedCount > 0 ? `你还有 ${qaUncheckedCount} 项巡检未完成` : '你还有巡检项未完成'}
                 />
               )}
+            </button>
+            {/* 版本巡检：发版前按版本走 8 项检查 */}
+            <button
+              type="button"
+              onClick={() => setIsVersionQaOpen(true)}
+              className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-default"
+              title="版本巡检 · 发版前按版本检查"
+            >
+              <PackageCheck className="w-3.5 h-3.5" />
+              版本巡检
             </button>
             <span
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md ${
@@ -238,6 +252,16 @@ function AppContent() {
         onToggle={toggleQa}
         lastResetAt={qaLastResetAt}
         isLoading={qaLoading}
+      />
+
+      {/* 版本巡检 */}
+      <VersionQaModal
+        isOpen={isVersionQaOpen}
+        onClose={() => setIsVersionQaOpen(false)}
+        rows={vqaRows}
+        onToggle={toggleVersionQa}
+        onReset={resetVersionQa}
+        isLoading={vqaLoading}
       />
 
       {/* Toast notifications */}
