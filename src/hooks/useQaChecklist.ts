@@ -58,7 +58,7 @@ export function useQaChecklist() {
       .select('*')
     if (error) {
       console.error('QA seed failed:', error)
-      toast('初始化测试专用清单失败', 'error')
+      toast('初始化测试每日巡检清单失败', 'error')
       return existing
     }
     return (data ?? []) as QaRow[]
@@ -129,7 +129,7 @@ export function useQaChecklist() {
         .select('*')
       if (error) {
         console.error('QA fetch failed:', error)
-        toast('加载测试专用清单失败', 'error')
+        toast('加载测试每日巡检清单失败', 'error')
         if (!cancelled) setIsLoading(false)
         return
       }

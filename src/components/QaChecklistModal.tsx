@@ -31,7 +31,7 @@ export function QaChecklistModal({ isOpen, onClose, rows, onToggle, lastResetAt,
           <div className="flex items-center gap-2">
             <ClipboardCheck className="w-5 h-5 text-primary" />
             <div>
-              <h3 className="text-base font-semibold">测试专用 · 每日巡检</h3>
+              <h3 className="text-base font-semibold">测试每日巡检</h3>
               <p className="text-[11px] text-muted-foreground mt-0.5">
                 {lastResetAt ? `上次重置：${formatResetTime(lastResetAt)}` : '尚未记录重置时间'}
               </p>

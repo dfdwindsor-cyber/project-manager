@@ -121,15 +121,15 @@ function AppContent() {
                 ))}
               </select>
             </label>
-            {/* 测试专用：QA 每日巡检入口 */}
+            {/* 测试每日巡检入口 */}
             <button
               type="button"
               onClick={() => setIsQaOpen(true)}
               className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-default"
-              title="测试专用 · 每日巡检"
+              title="测试每日巡检"
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
-              测试专用
+              测试每日巡检
               {qaHasUnchecked && (
                 <span
                   className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-card animate-pulse"

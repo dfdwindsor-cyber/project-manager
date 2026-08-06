@@ -73,7 +73,7 @@ export function formatResetTime(iso: string): string {
   return `${mm}月${dd}日 ${hh}:${mi}`
 }
 
-/* ---------- 版本巡检（发版前，一个版本一份检查表；与「测试专用」独立） ---------- */
+/* ---------- 版本巡检（发版前，一个版本一份检查表；与「测试每日巡检」独立） ---------- */
 
 export const QA_VERSIONS = ['pets', 'taylor', '合合'] as const
 export type QaVersion = (typeof QA_VERSIONS)[number]
@@ -125,18 +125,14 @@ export const QA_VERSION_ITEMS_BEFORE: readonly QaVersionItem[] = [
   { phase: 'before', title: '剑心表格', detail: '数值配置', method: '确认剑心表格是否比对完成' },
 ]
 
-/** 版本上线后（上线当日/次日线上验证）；顺序 = DB item_idx 9..13 */
+/** 版本上线后（上线当日/次日线上验证）；顺序 = DB item_idx 9..14 */
 export const QA_VERSION_ITEMS_AFTER: readonly QaVersionItem[] = [
   { phase: 'after', title: '登录', detail: '安卓、iOS', method: '版本负责人，确保 fb、google、iOS、微信登录成功' },
   { phase: 'after', title: 'GM', detail: '安卓、iOS', method: '版本负责人，确保界面 GM、LOG 日志开关关闭' },
   { phase: 'after', title: '礼包', detail: '安卓、iOS', method: '礼包负责人，检查礼包，确保付费成功正常返回' },
   { phase: 'after', title: '广告', detail: '安卓、iOS', method: '版本负责人，观看成功，确保成功返回奖励增加' },
-  {
-    phase: 'after',
-    title: '排期',
-    detail: '安卓、iOS',
-    method: '活动负责人，检查活动，确保界面内容功能正常\n与剑心确认中台是否准备好',
-  },
+  { phase: 'after', title: '排期', detail: '安卓、iOS', method: '活动负责人，检查活动，确保界面内容功能正常' },
+  { phase: 'after', title: '中台确认', detail: '剑心对齐', method: '与剑心确认中台是否准备好' },
 ]
 
 /** 汇总数组：DB 用其 index 作为 item_idx（before 段占 0..8，after 段占 9..13） */
