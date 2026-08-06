@@ -26,7 +26,7 @@ function App() {
 function AppContent() {
   const { isAdmin, currentUser, setCurrentUser } = useAuth()
   const { tabs, archivedTabs, addTab, archiveTab, restoreTab, renameTab, isLoading: tabsLoading } = useTabs()
-  const { rows: qaRows, hasUnchecked: qaHasUnchecked, toggle: toggleQa, lastResetAt: qaLastResetAt, isLoading: qaLoading } = useQaChecklist()
+  const { rows: qaRows, hasUnchecked: qaHasUnchecked, uncheckedCount: qaUncheckedCount, toggle: toggleQa, lastResetAt: qaLastResetAt, isLoading: qaLoading } = useQaChecklist()
   const [activeTab, setActiveTab] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isQaOpen, setIsQaOpen] = useState(false)
@@ -129,7 +129,7 @@ function AppContent() {
               {qaHasUnchecked && (
                 <span
                   className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-card animate-pulse"
-                  title="有未完成的巡检项"
+                  title={qaUncheckedCount > 0 ? `你还有 ${qaUncheckedCount} 项巡检未完成` : '你还有巡检项未完成'}
                 />
               )}
             </button>

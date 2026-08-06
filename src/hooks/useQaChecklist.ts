@@ -12,6 +12,8 @@ import {
   type QaTester,
 } from '@/lib/qa'
 
+const TESTER_SET: ReadonlySet<string> = new Set(QA_TESTERS)
+
 interface QaMeta {
   id: string
   last_reset_at: string
@@ -236,12 +238,30 @@ export function useQaChecklist() {
     [currentUser]
   )
 
-  // 兜底：只有 18 行都存在且全部 done 时才算“无未完成”，
-  // 表未建 / 加载中 / 部分行缺失时都视为有未完成，保证红点能显示出来提醒。
-  const hasUnchecked = useMemo(
+  // 红点按人识别：
+  //   - 当前身份是 3 位测试之一 → 仅看本人对应的 6 项是否有未完成（本人全部 done → 不显示红点）
+  //   - 其它身份（含未设置）→ 无红点（红点是个人待办提醒，非本人无对应事项）
+  //   - 数据未就绪（表未建/正在加载）→ 若本人是测试则视为未完成兜底显示；非测试仍不显示
+  const hasUnchecked = useMemo(() => {
+    if (!currentUser || !TESTER_SET.has(currentUser)) return false
+    const myRows = rows.filter((r) => r.tester === currentUser)
+    if (myRows.length < QA_ITEMS.length) return true
+    return myRows.some((r) => !r.done)
+  }, [rows, currentUser])
+
+  // 未完成计数（同样按当前身份），便于按钮 tooltip / 徽标使用
+  const uncheckedCount = useMemo(() => {
+    if (!currentUser || !TESTER_SET.has(currentUser)) return 0
+    const myRows = rows.filter((r) => r.tester === currentUser)
+    const missing = Math.max(0, QA_ITEMS.length - myRows.length)
+    return missing + myRows.filter((r) => !r.done).length
+  }, [rows, currentUser])
+
+  // 保留一个全局标志：管理员/其他角色若需要，可从这里读到「组内是否还有未完成」
+  const anyUnchecked = useMemo(
     () => rows.length < QA_TOTAL_ROWS || rows.some((r) => !r.done),
     [rows]
   )
 
-  return { rows, hasUnchecked, toggle, lastResetAt, isLoading }
+  return { rows, hasUnchecked, uncheckedCount, anyUnchecked, toggle, lastResetAt, isLoading }
 }
