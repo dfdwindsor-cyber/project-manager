@@ -6,12 +6,14 @@ import { NewTaskModal } from '@/components/NewTaskModal'
 import { EditTaskModal } from '@/components/EditTaskModal'
 import { HistorySidebar } from '@/components/HistorySidebar'
 import { ToastContainer } from '@/components/Toast'
+import { QaChecklistModal } from '@/components/QaChecklistModal'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { useTabs } from '@/hooks/useTabs'
 import { useTasks } from '@/hooks/useTasks'
+import { useQaChecklist } from '@/hooks/useQaChecklist'
 import { ALL_MEMBERS } from '@/lib/data'
 import type { Task } from '@/lib/data'
-import { Shield, ShieldCheck, Loader2 } from 'lucide-react'
+import { Shield, ShieldCheck, Loader2, ClipboardCheck } from 'lucide-react'
 
 function App() {
   return (
@@ -24,8 +26,10 @@ function App() {
 function AppContent() {
   const { isAdmin, currentUser, setCurrentUser } = useAuth()
   const { tabs, archivedTabs, addTab, archiveTab, restoreTab, renameTab, isLoading: tabsLoading } = useTabs()
+  const { rows: qaRows, hasUnchecked: qaHasUnchecked, toggle: toggleQa, lastResetAt: qaLastResetAt, isLoading: qaLoading } = useQaChecklist()
   const [activeTab, setActiveTab] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isQaOpen, setIsQaOpen] = useState(false)
 
   // 初始化 activeTab
   useEffect(() => {
@@ -113,6 +117,22 @@ function AppContent() {
                 ))}
               </select>
             </label>
+            {/* 测试专用：QA 每日巡检入口 */}
+            <button
+              type="button"
+              onClick={() => setIsQaOpen(true)}
+              className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-default"
+              title="测试专用 · 每日巡检"
+            >
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              测试专用
+              {qaHasUnchecked && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 animate-pulse"
+                  title="有未完成的巡检项"
+                />
+              )}
+            </button>
             <span
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md ${
                 isAdmin
@@ -208,6 +228,16 @@ function AppContent() {
         task={editingTask}
         onClose={() => setEditingTask(null)}
         onSubmit={updateTask}
+      />
+
+      {/* QA 每日巡检 */}
+      <QaChecklistModal
+        isOpen={isQaOpen}
+        onClose={() => setIsQaOpen(false)}
+        rows={qaRows}
+        onToggle={toggleQa}
+        lastResetAt={qaLastResetAt}
+        isLoading={qaLoading}
       />
 
       {/* Toast notifications */}
