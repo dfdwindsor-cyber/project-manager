@@ -97,27 +97,66 @@ export function canOperateVersion(currentUser: string | null | undefined, versio
   return QA_VERSION_SUPERTESTERS.includes(currentUser)
 }
 
+export type QaVersionPhase = 'before' | 'after'
+
 export interface QaVersionItem {
+  phase: QaVersionPhase
   title: string
   detail: string
   /** 多条测试方法用 "\n" 分隔，模态渲染时会各占一行 */
   method: string
 }
 
-export const QA_VERSION_ITEMS: readonly QaVersionItem[] = [
-  { title: '注册', detail: '安卓、iOS', method: '版本负责人，创建新号，确保基本功能没有问题' },
-  { title: '新手', detail: '安卓、iOS', method: '版本负责人，确保新手活动功能正常，没有不看' },
-  { title: '礼包', detail: '安卓、iOS', method: '礼包负责人，检查礼包，确保付费成功正常返回' },
-  { title: '广告', detail: '安卓、iOS', method: '版本负责人，观看成功，确保成功返回奖励增加' },
+/** 版本上线前（发版前必检）；顺序 = DB item_idx 0..8，改前请确认不会打乱已有数据 */
+export const QA_VERSION_ITEMS_BEFORE: readonly QaVersionItem[] = [
+  { phase: 'before', title: '注册', detail: '安卓、iOS', method: '版本负责人，创建新号，确保基本功能没有问题' },
+  { phase: 'before', title: '新手', detail: '安卓、iOS', method: '版本负责人，确保新手活动功能正常，没有不看' },
+  { phase: 'before', title: '礼包', detail: '安卓、iOS', method: '礼包负责人，检查礼包，确保付费成功正常返回' },
+  { phase: 'before', title: '广告', detail: '安卓、iOS', method: '版本负责人，观看成功，确保成功返回奖励增加' },
   {
+    phase: 'before',
     title: '排期',
     detail: '安卓、iOS',
     method: '版本负责人，测试排期，确保所有活动礼包正常\n活动负责人，结合排期，确保不同时间活动正常',
   },
-  { title: '遗留', detail: '安卓、iOS', method: '跟进人确认，遗留问题，是否本次版本需要修改' },
-  { title: '代码', detail: '安卓、iOS', method: '活动负责人，与开发确认代码是否全合并到分支' },
-  { title: '崩溃', detail: '安卓、iOS', method: '让开发检查，后台崩溃，是否本次版本需要修改' },
+  { phase: 'before', title: '遗留', detail: '安卓、iOS', method: '跟进人确认，遗留问题，是否本次版本需要修改' },
+  { phase: 'before', title: '代码', detail: '安卓、iOS', method: '活动负责人，与开发确认代码是否全合并到分支' },
+  { phase: 'before', title: '崩溃', detail: '安卓、iOS', method: '让开发检查，后台崩溃，是否本次版本需要修改' },
+  { phase: 'before', title: '剑心表格', detail: '数值配置', method: '确认剑心表格是否比对完成' },
 ]
+
+/** 版本上线后（上线当日/次日线上验证）；顺序 = DB item_idx 9..13 */
+export const QA_VERSION_ITEMS_AFTER: readonly QaVersionItem[] = [
+  { phase: 'after', title: '登录', detail: '安卓、iOS', method: '版本负责人，确保 fb、google、iOS、微信登录成功' },
+  { phase: 'after', title: 'GM', detail: '安卓、iOS', method: '版本负责人，确保界面 GM、LOG 日志开关关闭' },
+  { phase: 'after', title: '礼包', detail: '安卓、iOS', method: '礼包负责人，检查礼包，确保付费成功正常返回' },
+  { phase: 'after', title: '广告', detail: '安卓、iOS', method: '版本负责人，观看成功，确保成功返回奖励增加' },
+  {
+    phase: 'after',
+    title: '排期',
+    detail: '安卓、iOS',
+    method: '活动负责人，检查活动，确保界面内容功能正常\n与剑心确认中台是否准备好',
+  },
+]
+
+/** 汇总数组：DB 用其 index 作为 item_idx（before 段占 0..8，after 段占 9..13） */
+export const QA_VERSION_ITEMS: readonly QaVersionItem[] = [
+  ...QA_VERSION_ITEMS_BEFORE,
+  ...QA_VERSION_ITEMS_AFTER,
+]
+
+/** before 段大小，用于计算 after 段 item_idx 起点 = QA_VERSION_ITEMS_BEFORE.length */
+export const QA_VERSION_AFTER_OFFSET = QA_VERSION_ITEMS_BEFORE.length
+
+export const QA_VERSION_PHASE_LABEL: Record<QaVersionPhase, string> = {
+  before: '版本上线前',
+  after: '版本上线后',
+}
+
+export const QA_VERSION_PHASE_COLOR: Record<QaVersionPhase, string> = {
+  before: 'hsl(200, 90%, 45%)', // sky-500：发版前准备
+  after: 'hsl(160, 65%, 40%)',  // emerald-600：上线后验证
+}
 
 export const QA_VERSION_TOTAL_ROWS = QA_VERSIONS.length * QA_VERSION_ITEMS.length
 

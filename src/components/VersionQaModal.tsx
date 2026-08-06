@@ -5,11 +5,17 @@ import { Avatar } from '@/components/Avatar'
 import {
   QA_VERSIONS,
   QA_VERSION_ITEMS,
+  QA_VERSION_ITEMS_BEFORE,
+  QA_VERSION_ITEMS_AFTER,
+  QA_VERSION_AFTER_OFFSET,
+  QA_VERSION_PHASE_LABEL,
+  QA_VERSION_PHASE_COLOR,
   VERSION_TESTER,
   QA_VERSION_SUPERTESTERS,
   canOperateVersion,
   qaVersionRowId,
   type QaVersion,
+  type QaVersionItem,
   type QaVersionRow,
 } from '@/lib/qa'
 import { X, PackageCheck, RotateCcw } from 'lucide-react'
@@ -38,6 +44,12 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
   const doneCount = versionRows.filter((r) => r.done).length
   const total = QA_VERSION_ITEMS.length
   const allDone = doneCount === total && versionRows.length === total
+
+  // 分段进度：上线前 / 上线后
+  const beforeDone = versionRows.filter((r) => r.item_idx < QA_VERSION_AFTER_OFFSET && r.done).length
+  const afterDone = versionRows.filter((r) => r.item_idx >= QA_VERSION_AFTER_OFFSET && r.done).length
+  const beforeTotal = QA_VERSION_ITEMS_BEFORE.length
+  const afterTotal = QA_VERSION_ITEMS_AFTER.length
 
   if (!isOpen) return null
 
@@ -105,13 +117,17 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
           <div className="flex items-center gap-1.5 text-xs ml-auto">
             <span
               className={cn(
-                'inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium',
+                'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium',
                 allDone
                   ? 'bg-emerald-100 text-emerald-700'
                   : 'bg-amber-100 text-amber-700'
               )}
+              title={`上线前 ${beforeDone}/${beforeTotal} · 上线后 ${afterDone}/${afterTotal}`}
             >
               {doneCount}/{total} {allDone ? '已完成' : '进行中'}
+              <span className="text-muted-foreground/80 font-normal ml-1">
+                （前 {beforeDone}/{beforeTotal} · 后 {afterDone}/{afterTotal}）
+              </span>
             </span>
             {confirmReset ? (
               <>
@@ -159,67 +175,33 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
                 <span className="text-center">是否完成</span>
               </div>
 
-              {QA_VERSION_ITEMS.map((item, idx) => {
-                const row = byId.get(qaVersionRowId(version, idx))
-                const done = row?.done ?? false
-                return (
-                  <div
-                    key={`${version}-${idx}`}
-                    className={cn(
-                      'grid grid-cols-[1fr_80px] gap-2 items-start px-3 py-2.5 rounded transition-default',
-                      done ? 'bg-emerald-50/60' : 'hover:bg-surface-hover',
-                      idx === 0 ? 'pt-3 border-t border-border' : ''
-                    )}
-                  >
-                    {/* Item：粗体标题 + 灰色细则 + 测试方法（可能多行） */}
-                    <div className="text-xs leading-snug">
-                      <div>
-                        <span className="text-muted-foreground mr-1">{idx + 1}.</span>
-                        <span className={cn('font-medium', done && 'text-muted-foreground line-through')}>
-                          {item.title}
-                        </span>
-                      </div>
-                      <div className={cn('text-[11px] text-muted-foreground pl-4 mt-0.5', done && 'line-through')}>
-                        {item.detail}
-                      </div>
-                      <div className={cn('text-[11px] pl-4 mt-0.5', done && 'line-through')}>
-                        {item.method.split('\n').map((line, i) => (
-                          <div key={i} className="flex gap-1">
-                            <span className="text-emerald-600 font-medium shrink-0">测试方法：</span>
-                            <span className="text-muted-foreground">{line}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Checkbox */}
-                    <div className="flex justify-center pt-0.5">
-                      <label
-                        className={cn(
-                          'inline-flex items-center gap-1.5',
-                          canToggle ? 'cursor-pointer' : 'cursor-not-allowed'
-                        )}
-                        title={canToggle ? undefined : `仅 ${tester} / 飞碟 / 番茄 可勾选`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={done}
-                          disabled={!canToggle}
-                          onChange={(e) => onToggle(version, idx, e.target.checked)}
-                          className="w-4 h-4 accent-emerald-500 cursor-[inherit] disabled:opacity-40"
-                        />
-                        <span
-                          className={cn(
-                            'text-[11px] font-medium',
-                            done ? 'text-emerald-600' : 'text-muted-foreground'
-                          )}
-                        >
-                          {done ? '已完成' : '未完成'}
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                )
-              })}
+              <PhaseSection
+                title={QA_VERSION_PHASE_LABEL.before}
+                color={QA_VERSION_PHASE_COLOR.before}
+                done={beforeDone}
+                total={beforeTotal}
+                items={QA_VERSION_ITEMS_BEFORE}
+                startFlatIdx={0}
+                version={version}
+                byId={byId}
+                canToggle={canToggle}
+                tester={tester}
+                onToggle={onToggle}
+              />
+
+              <PhaseSection
+                title={QA_VERSION_PHASE_LABEL.after}
+                color={QA_VERSION_PHASE_COLOR.after}
+                done={afterDone}
+                total={afterTotal}
+                items={QA_VERSION_ITEMS_AFTER}
+                startFlatIdx={QA_VERSION_AFTER_OFFSET}
+                version={version}
+                byId={byId}
+                canToggle={canToggle}
+                tester={tester}
+                onToggle={onToggle}
+              />
             </div>
           )}
         </div>
@@ -244,5 +226,105 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
         </div>
       </div>
     </div>
+  )
+}
+
+interface PhaseSectionProps {
+  title: string
+  color: string
+  done: number
+  total: number
+  items: readonly QaVersionItem[]
+  /** 该段第一项在 QA_VERSION_ITEMS 中的 flat index（= 该段的 DB item_idx 起点） */
+  startFlatIdx: number
+  version: QaVersion
+  byId: Map<string, QaVersionRow>
+  canToggle: boolean
+  tester: string
+  onToggle: (version: QaVersion, itemIdx: number, done: boolean) => void
+}
+
+function PhaseSection({ title, color, done, total, items, startFlatIdx, version, byId, canToggle, tester, onToggle }: PhaseSectionProps) {
+  const allDone = done === total
+  return (
+    <>
+      {/* 段头：色条 + 标题 + 进度 */}
+      <div className="flex items-center gap-2 mt-4 mb-1 px-3 py-1.5 rounded-md" style={{ backgroundColor: `${color}12` }}>
+        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+        <span className="text-xs font-semibold" style={{ color }}>
+          {title}
+        </span>
+        <span
+          className={cn(
+            'ml-auto inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium',
+            allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-white/70 text-muted-foreground'
+          )}
+        >
+          {done}/{total}
+        </span>
+      </div>
+
+      {items.map((item, localIdx) => {
+        const flatIdx = startFlatIdx + localIdx
+        const row = byId.get(qaVersionRowId(version, flatIdx))
+        const done = row?.done ?? false
+        return (
+          <div
+            key={`${version}-${flatIdx}`}
+            className={cn(
+              'grid grid-cols-[1fr_80px] gap-2 items-start px-3 py-2.5 rounded transition-default',
+              done ? 'bg-emerald-50/60' : 'hover:bg-surface-hover'
+            )}
+          >
+            <div className="text-xs leading-snug">
+              <div>
+                <span className="text-muted-foreground mr-1">{localIdx + 1}.</span>
+                <span className={cn('font-medium', done && 'text-muted-foreground line-through')}>
+                  {item.title}
+                </span>
+              </div>
+              {item.detail && (
+                <div className={cn('text-[11px] text-muted-foreground pl-4 mt-0.5', done && 'line-through')}>
+                  {item.detail}
+                </div>
+              )}
+              <div className={cn('text-[11px] pl-4 mt-0.5', done && 'line-through')}>
+                {item.method.split('\n').map((line, i) => (
+                  <div key={i} className="flex gap-1">
+                    <span className="text-emerald-600 font-medium shrink-0">测试方法：</span>
+                    <span className="text-muted-foreground">{line}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center pt-0.5">
+              <label
+                className={cn(
+                  'inline-flex items-center gap-1.5',
+                  canToggle ? 'cursor-pointer' : 'cursor-not-allowed'
+                )}
+                title={canToggle ? undefined : `仅 ${tester} / 飞碟 / 番茄 可勾选`}
+              >
+                <input
+                  type="checkbox"
+                  checked={done}
+                  disabled={!canToggle}
+                  onChange={(e) => onToggle(version, flatIdx, e.target.checked)}
+                  className="w-4 h-4 accent-emerald-500 cursor-[inherit] disabled:opacity-40"
+                />
+                <span
+                  className={cn(
+                    'text-[11px] font-medium',
+                    done ? 'text-emerald-600' : 'text-muted-foreground'
+                  )}
+                >
+                  {done ? '已完成' : '未完成'}
+                </span>
+              </label>
+            </div>
+          </div>
+        )
+      })}
+    </>
   )
 }
