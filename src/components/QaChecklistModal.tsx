@@ -88,7 +88,7 @@ export function QaChecklistModal({ isOpen, onClose, rows, onToggle, lastResetAt,
                               <span className="text-xs text-muted-foreground/60 pl-7">·</span>
                             )}
                           </div>
-                          {/* Item：粗体标题 + 灰色细则 */}
+                          {/* Item：粗体标题 + 灰色细则 + 测试方法 */}
                           <div className="text-xs leading-snug">
                             <div>
                               <span className="text-muted-foreground mr-1">{idx + 1}.</span>
@@ -98,6 +98,10 @@ export function QaChecklistModal({ isOpen, onClose, rows, onToggle, lastResetAt,
                             </div>
                             <div className={cn('text-[11px] text-muted-foreground pl-4 mt-0.5', done && 'line-through')}>
                               {item.detail}
+                            </div>
+                            <div className={cn('text-[11px] pl-4 mt-0.5 flex gap-1', done && 'line-through')}>
+                              <span className="text-emerald-600 font-medium shrink-0">测试方法：</span>
+                              <span className="text-muted-foreground">{item.method}</span>
                             </div>
                           </div>
                           {/* Checkbox */}

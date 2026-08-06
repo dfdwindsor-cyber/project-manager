@@ -6,15 +6,41 @@ export interface QaItem {
   title: string
   /** 具体检查内容，展示在标题下方 */
   detail: string
+  /** 测试方法：由谁、按什么方式、达到什么效果 */
+  method: string
 }
 
 export const QA_ITEMS: readonly QaItem[] = [
-  { title: '每日登录', detail: '安卓、iOS：检查游客登录、三方登录' },
-  { title: '当日礼包', detail: '安卓、iOS：检查礼包界面、礼包购买' },
-  { title: '当日广告', detail: '安卓、iOS：检查广告状态、广告观看' },
-  { title: '当日活动', detail: '安卓、iOS：检查当前三个版本，保证活动界面、功能流程正常' },
-  { title: '线上排期', detail: '安卓、iOS：提前检查后三天的排期，保证活动、礼包开启正常' },
-  { title: '线上反馈', detail: '安卓、iOS：跟进运营群反馈的问题，谁的功能谁跟进到发版' },
+  {
+    title: '每日登录',
+    detail: '安卓、iOS：检查游客登录、三方登录',
+    method: '版本负责人，每日登录，确保登录成功没有异常',
+  },
+  {
+    title: '当日礼包',
+    detail: '安卓、iOS：检查礼包界面、礼包购买',
+    method: '版本负责人，当日礼包，确保新开礼包购买正常',
+  },
+  {
+    title: '当日广告',
+    detail: '安卓、iOS：检查广告状态、广告观看',
+    method: '版本负责人，每日观看，确保成功返回奖励增加',
+  },
+  {
+    title: '当日活动',
+    detail: '安卓、iOS：检查当前三个版本，保证活动界面、功能流程正常',
+    method: '活动负责人，开启前天，提前打穿确保没有问题',
+  },
+  {
+    title: '线上排期',
+    detail: '安卓、iOS：提前检查后三天的排期，保证活动、礼包开启正常',
+    method: '版本负责人，按照排期，确保当日开启活动正确',
+  },
+  {
+    title: '线上反馈',
+    detail: '安卓、iOS：跟进运营群反馈的问题，谁的功能谁跟进到发版',
+    method: '活动负责人，每日跟进，运营同学反馈线上问题',
+  },
 ]
 
 export const QA_TOTAL_ROWS = QA_TESTERS.length * QA_ITEMS.length
