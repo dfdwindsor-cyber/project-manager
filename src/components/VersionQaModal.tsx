@@ -6,6 +6,8 @@ import {
   QA_VERSIONS,
   QA_VERSION_ITEMS,
   VERSION_TESTER,
+  QA_VERSION_SUPERTESTERS,
+  canOperateVersion,
   qaVersionRowId,
   type QaVersion,
   type QaVersionRow,
@@ -29,7 +31,8 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
   const byId = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows])
 
   const tester = VERSION_TESTER[version]
-  const canToggle = currentUser === tester
+  const canToggle = canOperateVersion(currentUser, version)
+  const isSuperTester = !!currentUser && QA_VERSION_SUPERTESTERS.includes(currentUser)
 
   const versionRows = useMemo(() => rows.filter((r) => r.version === version), [rows, version])
   const doneCount = versionRows.filter((r) => r.done).length
@@ -132,7 +135,7 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
                 type="button"
                 onClick={() => setConfirmReset(true)}
                 disabled={!canToggle}
-                title={canToggle ? '重置本版本所有巡检项为未完成' : `仅 ${tester} 可重置`}
+                title={canToggle ? '重置本版本所有巡检项为未完成' : `仅 ${tester} / 飞碟 / 番茄 可重置`}
                 className={cn(
                   'flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-input transition-default',
                   canToggle ? 'hover:bg-accent' : 'opacity-50 cursor-not-allowed'
@@ -195,7 +198,7 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
                           'inline-flex items-center gap-1.5',
                           canToggle ? 'cursor-pointer' : 'cursor-not-allowed'
                         )}
-                        title={canToggle ? undefined : `仅 ${tester} 可勾选`}
+                        title={canToggle ? undefined : `仅 ${tester} / 飞碟 / 番茄 可勾选`}
                       >
                         <input
                           type="checkbox"
@@ -223,10 +226,16 @@ export function VersionQaModal({ isOpen, onClose, rows, onToggle, onReset, isLoa
 
         {/* Footer */}
         <div className="px-5 py-3 border-t border-border bg-accent/20 text-[11px] text-muted-foreground leading-relaxed">
-          仅版本对应的测试负责人可勾选与重置：pets → 暖树，taylor → 番茄，合合 → 玲子。
+          版本负责人：pets → 暖树，taylor → 番茄，合合 → 玲子。
+          飞碟 与 番茄 拥有全版本勾选与重置权限。
+          {isSuperTester && currentUser !== tester && (
+            <span className="block mt-1 text-primary/80">
+              你（{currentUser}）以超级测试身份对 {version} 操作，请谨慎。
+            </span>
+          )}
           {!canToggle && currentUser && (
             <span className="block mt-1 text-amber-600">
-              当前身份「{currentUser}」不是 {version} 的负责人（应为 {tester}），无法操作。
+              当前身份「{currentUser}」不是 {version} 的负责人（应为 {tester}），也不在飞碟/番茄权限内，无法操作。
             </span>
           )}
           {!currentUser && (

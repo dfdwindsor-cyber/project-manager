@@ -85,6 +85,18 @@ export const VERSION_TESTER: Record<QaVersion, QaTester> = {
   合合: '玲子',
 }
 
+/**
+ * 「超级测试」：除本版本对应负责人外，也可勾选/重置任何版本。
+ * 飞碟：管理员；番茄：QA leader 角色，跨版本盖章。
+ */
+export const QA_VERSION_SUPERTESTERS: readonly string[] = ['飞碟', '番茄']
+
+export function canOperateVersion(currentUser: string | null | undefined, version: QaVersion): boolean {
+  if (!currentUser) return false
+  if (currentUser === VERSION_TESTER[version]) return true
+  return QA_VERSION_SUPERTESTERS.includes(currentUser)
+}
+
 export interface QaVersionItem {
   title: string
   detail: string

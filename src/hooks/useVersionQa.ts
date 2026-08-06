@@ -7,6 +7,7 @@ import {
   QA_VERSION_ITEMS,
   QA_VERSION_TOTAL_ROWS,
   VERSION_TESTER,
+  canOperateVersion,
   qaVersionRowId,
   type QaVersion,
   type QaVersionRow,
@@ -113,9 +114,9 @@ export function useVersionQa() {
 
   const toggle = useCallback(
     async (version: QaVersion, itemIdx: number, done: boolean) => {
-      const expected = VERSION_TESTER[version]
-      if (currentUser !== expected) {
-        toast(`仅 ${expected} 可勾选 ${version} 的巡检项`, 'error')
+      if (!canOperateVersion(currentUser, version)) {
+        const expected = VERSION_TESTER[version]
+        toast(`仅 ${expected} / 飞碟 / 番茄 可勾选 ${version} 的巡检项`, 'error')
         return
       }
       const id = qaVersionRowId(version, itemIdx)
@@ -143,9 +144,9 @@ export function useVersionQa() {
 
   const resetVersion = useCallback(
     async (version: QaVersion) => {
-      const expected = VERSION_TESTER[version]
-      if (currentUser !== expected) {
-        toast(`仅 ${expected} 可重置 ${version} 的巡检`, 'error')
+      if (!canOperateVersion(currentUser, version)) {
+        const expected = VERSION_TESTER[version]
+        toast(`仅 ${expected} / 飞碟 / 番茄 可重置 ${version} 的巡检`, 'error')
         return
       }
       const nowIso = new Date().toISOString()
