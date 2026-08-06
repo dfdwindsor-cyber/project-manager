@@ -72,13 +72,13 @@ export function QaChecklistModal({ isOpen, onClose, rows, onToggle, lastResetAt,
                         <div
                           key={`${tester}-${idx}`}
                           className={cn(
-                            'grid grid-cols-[110px_1fr_80px] gap-2 items-center px-3 py-2 rounded transition-default',
+                            'grid grid-cols-[110px_1fr_80px] gap-2 items-start px-3 py-2.5 rounded transition-default',
                             done ? 'bg-emerald-50/60' : 'hover:bg-surface-hover',
                             idx === 0 ? 'pt-3 border-t border-border' : ''
                           )}
                         >
                           {/* Tester */}
-                          <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="flex items-center gap-1.5 min-w-0 pt-0.5">
                             {showAvatar ? (
                               <>
                                 <Avatar name={tester} size="sm" />
@@ -88,13 +88,20 @@ export function QaChecklistModal({ isOpen, onClose, rows, onToggle, lastResetAt,
                               <span className="text-xs text-muted-foreground/60 pl-7">·</span>
                             )}
                           </div>
-                          {/* Item */}
-                          <div className="text-xs">
-                            <span className="text-muted-foreground mr-1">{idx + 1}.</span>
-                            <span className={cn(done && 'text-muted-foreground line-through')}>{item}</span>
+                          {/* Item：粗体标题 + 灰色细则 */}
+                          <div className="text-xs leading-snug">
+                            <div>
+                              <span className="text-muted-foreground mr-1">{idx + 1}.</span>
+                              <span className={cn('font-medium', done && 'text-muted-foreground line-through')}>
+                                {item.title}
+                              </span>
+                            </div>
+                            <div className={cn('text-[11px] text-muted-foreground pl-4 mt-0.5', done && 'line-through')}>
+                              {item.detail}
+                            </div>
                           </div>
                           {/* Checkbox */}
-                          <div className="flex justify-center">
+                          <div className="flex justify-center pt-0.5">
                             <label
                               className={cn(
                                 'inline-flex items-center gap-1.5',

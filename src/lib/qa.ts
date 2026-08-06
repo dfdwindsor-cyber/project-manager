@@ -1,13 +1,20 @@
 export const QA_TESTERS = ['番茄', '玲子', '暖树'] as const
 export type QaTester = (typeof QA_TESTERS)[number]
 
-export const QA_ITEMS: readonly string[] = [
-  '登录线上安装，ios账号',
-  '检查当日礼包',
-  '广告检查',
-  '当日活动检查',
-  '最近三天线上活动检查',
-  '线上反馈',
+export interface QaItem {
+  /** 简称，用于列表左侧粗体展示 */
+  title: string
+  /** 具体检查内容，展示在标题下方 */
+  detail: string
+}
+
+export const QA_ITEMS: readonly QaItem[] = [
+  { title: '每日登录', detail: '安卓、iOS：检查游客登录、三方登录' },
+  { title: '当日礼包', detail: '安卓、iOS：检查礼包界面、礼包购买' },
+  { title: '当日广告', detail: '安卓、iOS：检查广告状态、广告观看' },
+  { title: '当日活动', detail: '安卓、iOS：检查当前三个版本，保证活动界面、功能流程正常' },
+  { title: '线上排期', detail: '安卓、iOS：提前检查后三天的排期，保证活动、礼包开启正常' },
+  { title: '线上反馈', detail: '安卓、iOS：跟进运营群反馈的问题，谁的功能谁跟进到发版' },
 ]
 
 export const QA_TOTAL_ROWS = QA_TESTERS.length * QA_ITEMS.length
