@@ -161,11 +161,12 @@ export const ASSIGNEE_COLORS: Record<string, string> = {
   '小矛': 'hsl(240, 50%, 55%)',
   '柳二龙': 'hsl(160, 55%, 45%)',
   '阿森': 'hsl(45, 70%, 50%)',
+  '枇杷': 'hsl(36, 85%, 50%)',
 }
 
 /** 每个工种对应的可选人员列表 */
 export const ROLE_MEMBERS: Record<RoleType, string[]> = {
-  planner: ['克兰', '九梨', '回文', '摇光', '飞碟', '柳二龙', '沐月'],
+  planner: ['克兰', '回文', '摇光', '飞碟', '柳二龙', '沐月', '枇杷'],
   ui: ['乌梅', '乐佩'],
   numerical: ['剑心'],
   dev: ['陶侃', '京墨', '稻壳', '宋云'],
