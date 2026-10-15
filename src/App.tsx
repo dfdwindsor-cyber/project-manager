@@ -95,17 +95,17 @@ function AppContent() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-screen min-w-0 flex flex-col overflow-hidden bg-background">
       {/* Project header */}
       <header className="border-b border-border bg-card shrink-0">
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 pb-2">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
               <span className="text-primary-foreground text-xs font-bold">T</span>
             </div>
             <h1 className="text-base font-semibold">taylor</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* 我是谁：自选身份，用于“策划本人可删自己任务”判断 */}
             <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <span className="text-xs">我是</span>
@@ -174,7 +174,7 @@ function AppContent() {
       </header>
 
       {/* Main content area with sidebar */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
         {/* History sidebar */}
         <HistorySidebar
           archivedTabs={archivedTabs}
@@ -184,7 +184,7 @@ function AppContent() {
         />
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
           {/* Archived banner */}
           {isViewingArchived && (
             <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex items-center gap-2 shrink-0">

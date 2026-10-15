@@ -68,7 +68,7 @@ export function ProjectTabs({ tabs, activeTab, onTabChange, onAddTab, onRemoveTa
   }
 
   return (
-    <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+    <div className="horizontal-scroll flex items-center gap-1 overflow-x-auto py-1 pr-6">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
         const isEditing = editingId === tab.id
@@ -83,13 +83,13 @@ export function ProjectTabs({ tabs, activeTab, onTabChange, onAddTab, onRemoveTa
               onChange={(e) => setEditLabel(e.target.value)}
               onKeyDown={handleRenameKeyDown}
               onBlur={commitRename}
-              className="h-7 w-32 px-2 text-sm rounded-md border border-ring bg-card focus:outline-none"
+              className="h-7 w-32 shrink-0 px-2 text-sm rounded-md border border-ring bg-card focus:outline-none"
             />
           )
         }
 
         return (
-          <div key={tab.id} className="relative group/tab flex items-center">
+          <div key={tab.id} className="relative group/tab flex shrink-0 items-center">
             <button
               type="button"
               onClick={() => onTabChange(tab.id)}
@@ -144,7 +144,7 @@ export function ProjectTabs({ tabs, activeTab, onTabChange, onAddTab, onRemoveTa
       {/* Add tab - admin only */}
       {isAdmin && (
         isAdding ? (
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <input
               type="text"
               value={newLabel}
@@ -160,7 +160,7 @@ export function ProjectTabs({ tabs, activeTab, onTabChange, onAddTab, onRemoveTa
           <button
             type="button"
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-1 px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-default text-sm"
+            className="flex shrink-0 items-center gap-1 px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-default text-sm"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>

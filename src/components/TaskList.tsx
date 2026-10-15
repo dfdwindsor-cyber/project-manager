@@ -174,225 +174,238 @@ export function TaskList({ tasks, onStatusChange, onRoleChange, onOpsChange, onN
     ? 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_minmax(110px,1fr)_minmax(100px,1fr)_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
     : 'grid-cols-[minmax(180px,2fr)_60px_80px_110px_repeat(5,minmax(100px,1fr))_minmax(100px,1fr)_minmax(80px,1fr)_minmax(120px,1.5fr)_60px]'
 
+  // Include every column, gap and horizontal padding in one shared table width.
+  const tableMinWidth = showOps ? 1476 : 1362
+
   return (
-    <div className="flex-1 overflow-auto">
-      {/* Table header */}
-      <div className={cn('sticky top-0 z-20 grid gap-1 px-3 py-2 bg-surface border-b border-border items-center', gridCols)}>
-        <ColumnFilter label="任务名称" options={filterOptions.name} selected={filters.name} onChange={(s) => updateFilter('name', s)} />
-        <ColumnFilter label="优先级" options={filterOptions.priority} selected={filters.priority} onChange={(s) => updateFilter('priority', s)} />
-        <ColumnFilter label="状态" options={filterOptions.status} selected={filters.status} onChange={(s) => updateFilter('status', s)} />
-        <ColumnFilter label="分类" options={filterOptions.classification} selected={filters.classification} onChange={(s) => updateFilter('classification', s)} />
-        {ROLE_LIST.map((r) => (
-          <ColumnFilter
-            key={r.key}
-            label={r.label}
-            options={filterOptions[r.key]}
-            selected={filters[r.key]}
-            onChange={(s) => updateFilter(r.key, s)}
-            colorDot={r.color}
-          />
-        ))}
-        {showOps && (
-          <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: OPS_ROLE.color }} />
-            {OPS_ROLE.label}
-          </span>
-        )}
-        <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: VFX_ROLE.color }} />
-          {VFX_ROLE.label}
-        </span>
-        <span className="text-xs font-medium text-muted-foreground">文档</span>
-        <span className="text-xs font-medium text-muted-foreground">备注</span>
-        <span className="text-xs font-medium text-muted-foreground">操作</span>
-      </div>
-
-      {/* Task rows */}
-      <div className="divide-y divide-border">
-        {filteredTasks.map((task, index) => {
-          const isExpanded = expandedId === task.id
-          const pConfig = PRIORITY_CONFIG[task.priority]
-
-          return (
-            <div key={task.id} className="animate-fade-in" style={{ animationDelay: `${index * 12}ms` }}>
-              {/* Main row */}
-              <div
-                className={cn(
-                  'grid gap-1 px-3 py-2.5 items-center',
-                  gridCols,
-                  'hover:bg-surface-hover transition-default group',
-                  isExpanded && 'bg-surface-hover'
-                )}
-              >
-                {/* Task name */}
-                <div
-                  className="flex items-start gap-1.5 min-w-0 cursor-pointer py-0.5"
-                  onClick={() => toggle(task.id)}
-                  onDoubleClick={(e) => { e.stopPropagation(); onEditTask?.(task) }}
-                >
-                  {isTaskOverdue(task) && (
-                    <span
-                      className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 mt-1.5 animate-pulse"
-                      title="研发排期已过期，任务未进入测试"
-                    />
-                  )}
-                  <ChevronRight className={cn(
-                    'w-3 h-3 text-muted-foreground shrink-0 transition-default mt-0.5',
-                    isExpanded && 'rotate-90'
-                  )} />
-                  <span className={cn(
-                    'text-sm font-medium whitespace-pre-wrap break-words leading-snug',
-                    task.needsUi && 'text-emerald-600'
-                  )}>{task.name}</span>
-                </div>
-
-                {/* Priority */}
-                <span className={cn(
-                  'inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-semibold w-fit',
-                  pConfig.className
-                )}>
-                  {pConfig.label}
-                </span>
-
-                {/* Status */}
-                <div onClick={(e) => e.stopPropagation()}>
-                  <StatusDropdown
-                    status={task.status}
-                    onChange={(s) => onStatusChange(task.id, s)}
-                  />
-                </div>
-
-                {/* Classification */}
-                <span className={cn(
-                  'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium truncate w-fit',
-                  CLASSIFICATION_COLORS[task.classification]?.bg ?? 'bg-gray-100',
-                  CLASSIFICATION_COLORS[task.classification]?.text ?? 'text-gray-600',
-                )}>
-                  {task.classification}
-                </span>
-
-                {/* 5 Role columns（数值列显示数值状态+时间，不显示负责人） */}
-                {ROLE_LIST.map((r) => (
-                  <div key={r.key} className="min-w-0">
-                    {r.key === 'numerical' ? (
-                      <NumericalCell status={task.numericalStatus ?? 'none'} schedule={task.roles.numerical} color={r.color} />
-                    ) : (
-                      <RoleCell schedule={task.roles[r.key]} color={r.color} />
-                    )}
-                  </div>
-                ))}
-
-                {/* 运营排期列（按需显示） */}
-                {showOps && (
-                  <div className="min-w-0">
-                    {task.needsOps ? (
-                      <RoleCell schedule={task.opsSchedule ?? EMPTY_SCHEDULE} color={OPS_ROLE.color} />
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </div>
-                )}
-
-                {/* 特效排期（常驻，替换原总工期列） */}
-                <div className="min-w-0">
-                  <RoleCell schedule={task.roles.vfx ?? EMPTY_SCHEDULE} color={VFX_ROLE.color} />
-                </div>
-
-                {/* Doc link */}
-                <div className="min-w-0">
-                  {task.docLink ? (
-                    /^https?:\/\//.test(task.docLink) ? (
-                      <a
-                        href={task.docLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-0.5 text-primary hover:text-primary/80 transition-default"
-                        title={task.docLink}
-                      >
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                        <span className="text-[10px] truncate">链接</span>
-                      </a>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground truncate block" title={task.docLink}>
-                        {task.docLink}
-                      </span>
-                    )
-                  ) : (
-                    <span className="text-muted-foreground text-xs">-</span>
-                  )}
-                </div>
-
-                {/* 备注 */}
-                <div className="min-w-0">
-                  {onRemarkChange ? (
-                    <RemarkField
-                      key={task.id}
-                      taskId={task.id}
-                      value={task.remark ?? ''}
-                      onChange={onRemarkChange}
-                    />
-                  ) : (
-                    <span className="text-xs text-red-600 whitespace-pre-wrap break-words">
-                      {task.remark || '-'}
-                    </span>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => toggle(task.id)}
-                    className="text-[10px] text-primary hover:underline"
-                  >
-                    {isExpanded ? '收起' : '编辑'}
-                  </button>
-                  {canDelete(task) && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: task.id, name: task.name }) }}
-                      className="p-1 text-muted-foreground hover:text-destructive transition-default rounded hover:bg-destructive/10"
-                      title="删除"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Expanded edit panel */}
-              {isExpanded && (
-                <RoleSchedulePanel
-                  roles={task.roles}
-                  onChange={(role, schedule) => onRoleChange(task.id, role, schedule)}
-                  needsOps={task.needsOps}
-                  opsSchedule={task.opsSchedule ?? EMPTY_SCHEDULE}
-                  onOpsChange={onOpsChange ? (schedule) => onOpsChange(task.id, schedule) : undefined}
-                  numericalStatus={task.numericalStatus ?? 'none'}
-                  onNumericalStatusChange={onNumericalStatusChange ? (status) => onNumericalStatusChange(task.id, status) : undefined}
-                />
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Empty state */}
-      {filteredTasks.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
-            <Plus className="w-8 h-8" />
+    <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
+      <div
+        className="horizontal-scroll flex-1 min-h-0 min-w-0 overflow-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring"
+        role="region"
+        aria-label="任务列表，可左右滚动查看所有列"
+        tabIndex={0}
+      >
+        <div style={{ minWidth: tableMinWidth }}>
+          {/* Table header */}
+          <div className={cn('sticky top-0 z-20 grid gap-1 px-3 py-2 bg-surface border-b border-border items-center', gridCols)}>
+            <ColumnFilter label="任务名称" options={filterOptions.name} selected={filters.name} onChange={(s) => updateFilter('name', s)} />
+            <ColumnFilter label="优先级" options={filterOptions.priority} selected={filters.priority} onChange={(s) => updateFilter('priority', s)} />
+            <ColumnFilter label="状态" options={filterOptions.status} selected={filters.status} onChange={(s) => updateFilter('status', s)} />
+            <ColumnFilter label="分类" options={filterOptions.classification} selected={filters.classification} onChange={(s) => updateFilter('classification', s)} />
+            {ROLE_LIST.map((r) => (
+              <ColumnFilter
+                key={r.key}
+                label={r.label}
+                options={filterOptions[r.key]}
+                selected={filters[r.key]}
+                onChange={(s) => updateFilter(r.key, s)}
+                colorDot={r.color}
+              />
+            ))}
+            {showOps && (
+              <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: OPS_ROLE.color }} />
+                {OPS_ROLE.label}
+              </span>
+            )}
+            <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: VFX_ROLE.color }} />
+              {VFX_ROLE.label}
+            </span>
+            <span className="text-xs font-medium text-muted-foreground">文档</span>
+            <span className="text-xs font-medium text-muted-foreground">备注</span>
+            <span className="text-xs font-medium text-muted-foreground">操作</span>
           </div>
-          <p className="text-sm">
-            {tasks.length === 0 ? '暂无任务，点击「新建任务」添加' : '没有匹配筛选条件的任务'}
-          </p>
-        </div>
-      )}
 
-      {/* Footer count */}
+          {/* Task rows */}
+          <div className="divide-y divide-border">
+            {filteredTasks.map((task, index) => {
+              const isExpanded = expandedId === task.id
+              const pConfig = PRIORITY_CONFIG[task.priority]
+
+              return (
+                <div key={task.id} className="animate-fade-in" style={{ animationDelay: `${index * 12}ms` }}>
+                  {/* Main row */}
+                  <div
+                    className={cn(
+                      'grid gap-1 px-3 py-2.5 items-center',
+                      gridCols,
+                      'hover:bg-surface-hover transition-default group',
+                      isExpanded && 'bg-surface-hover'
+                    )}
+                  >
+                    {/* Task name */}
+                    <div
+                      className="flex items-start gap-1.5 min-w-0 cursor-pointer py-0.5"
+                      onClick={() => toggle(task.id)}
+                      onDoubleClick={(e) => { e.stopPropagation(); onEditTask?.(task) }}
+                    >
+                      {isTaskOverdue(task) && (
+                        <span
+                          className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 mt-1.5 animate-pulse"
+                          title="研发排期已过期，任务未进入测试"
+                        />
+                      )}
+                      <ChevronRight className={cn(
+                        'w-3 h-3 text-muted-foreground shrink-0 transition-default mt-0.5',
+                        isExpanded && 'rotate-90'
+                      )} />
+                      <span className={cn(
+                        'text-sm font-medium whitespace-pre-wrap break-words leading-snug',
+                        task.needsUi && 'text-emerald-600'
+                      )}>{task.name}</span>
+                    </div>
+
+                    {/* Priority */}
+                    <span className={cn(
+                      'inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-semibold w-fit',
+                      pConfig.className
+                    )}>
+                      {pConfig.label}
+                    </span>
+
+                    {/* Status */}
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <StatusDropdown
+                        status={task.status}
+                        onChange={(s) => onStatusChange(task.id, s)}
+                      />
+                    </div>
+
+                    {/* Classification */}
+                    <span className={cn(
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium truncate w-fit',
+                      CLASSIFICATION_COLORS[task.classification]?.bg ?? 'bg-gray-100',
+                      CLASSIFICATION_COLORS[task.classification]?.text ?? 'text-gray-600',
+                    )}>
+                      {task.classification}
+                    </span>
+
+                    {/* 5 Role columns（数值列显示数值状态+时间，不显示负责人） */}
+                    {ROLE_LIST.map((r) => (
+                      <div key={r.key} className="min-w-0">
+                        {r.key === 'numerical' ? (
+                          <NumericalCell status={task.numericalStatus ?? 'none'} schedule={task.roles.numerical} color={r.color} />
+                        ) : (
+                          <RoleCell schedule={task.roles[r.key]} color={r.color} />
+                        )}
+                      </div>
+                    ))}
+
+                    {/* 运营排期列（按需显示） */}
+                    {showOps && (
+                      <div className="min-w-0">
+                        {task.needsOps ? (
+                          <RoleCell schedule={task.opsSchedule ?? EMPTY_SCHEDULE} color={OPS_ROLE.color} />
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 特效排期（常驻，替换原总工期列） */}
+                    <div className="min-w-0">
+                      <RoleCell schedule={task.roles.vfx ?? EMPTY_SCHEDULE} color={VFX_ROLE.color} />
+                    </div>
+
+                    {/* Doc link */}
+                    <div className="min-w-0">
+                      {task.docLink ? (
+                        /^https?:\/\//.test(task.docLink) ? (
+                          <a
+                            href={task.docLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-0.5 text-primary hover:text-primary/80 transition-default"
+                            title={task.docLink}
+                          >
+                            <ExternalLink className="w-3 h-3 shrink-0" />
+                            <span className="text-[10px] truncate">链接</span>
+                          </a>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground truncate block" title={task.docLink}>
+                            {task.docLink}
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-muted-foreground text-xs">-</span>
+                      )}
+                    </div>
+
+                    {/* 备注 */}
+                    <div className="min-w-0">
+                      {onRemarkChange ? (
+                        <RemarkField
+                          key={task.id}
+                          taskId={task.id}
+                          value={task.remark ?? ''}
+                          onChange={onRemarkChange}
+                        />
+                      ) : (
+                        <span className="text-xs text-red-600 whitespace-pre-wrap break-words">
+                          {task.remark || '-'}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => toggle(task.id)}
+                        className="text-[10px] text-primary hover:underline"
+                      >
+                        {isExpanded ? '收起' : '编辑'}
+                      </button>
+                      {canDelete(task) && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: task.id, name: task.name }) }}
+                          className="p-1 text-muted-foreground hover:text-destructive transition-default rounded hover:bg-destructive/10"
+                          title="删除"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Expanded edit panel */}
+                  {isExpanded && (
+                    <RoleSchedulePanel
+                      roles={task.roles}
+                      onChange={(role, schedule) => onRoleChange(task.id, role, schedule)}
+                      needsOps={task.needsOps}
+                      opsSchedule={task.opsSchedule ?? EMPTY_SCHEDULE}
+                      onOpsChange={onOpsChange ? (schedule) => onOpsChange(task.id, schedule) : undefined}
+                      numericalStatus={task.numericalStatus ?? 'none'}
+                      onNumericalStatusChange={onNumericalStatusChange ? (status) => onNumericalStatusChange(task.id, status) : undefined}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Empty state */}
+          {filteredTasks.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+              <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
+                <Plus className="w-8 h-8" />
+              </div>
+              <p className="text-sm">
+                {tasks.length === 0 ? '暂无任务，点击「新建任务」添加' : '没有匹配筛选条件的任务'}
+              </p>
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* Keep the count outside the viewport so the scrollbar stays accessible. */}
       {tasks.length > 0 && (
-        <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-2 text-xs text-muted-foreground">
+        <div className="shrink-0 bg-surface border-t border-border px-4 py-2 text-xs text-muted-foreground">
           共 {tasks.length} 条任务
           {filteredTasks.length !== tasks.length && `，筛选显示 ${filteredTasks.length} 条`}
         </div>

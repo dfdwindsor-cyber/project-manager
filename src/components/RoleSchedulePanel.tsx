@@ -86,7 +86,7 @@ function AssigneeInput({
         }}
         onBlur={() => commit(local)}
         placeholder="选择或输入负责人"
-        className="flex-1 h-7 px-2 rounded border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-default"
+        className="flex-1 min-w-0 h-7 px-2 rounded border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-default"
       />
       <datalist id={listId}>
         {members.map((name) => (
@@ -126,7 +126,7 @@ function ScheduleCard({ label, color, schedule, members, listId, showDates, onAs
   const isoEnd = toISODate(schedule.endDate)
 
   return (
-    <div className="rounded-lg border border-border bg-card p-3 space-y-2.5">
+    <div className="min-w-0 rounded-lg border border-border bg-card p-3 space-y-2.5">
       {/* Header */}
       <div className="flex items-center gap-2">
         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />

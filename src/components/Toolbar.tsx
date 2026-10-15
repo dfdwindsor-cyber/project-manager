@@ -7,7 +7,7 @@ interface ToolbarProps {
 
 export function Toolbar({ onNewTask }: ToolbarProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-border shrink-0">
       <span className="text-xs text-muted-foreground">点击列头可筛选 · 点击任务行可展开编辑工种排期</span>
       <Button size="sm" onClick={onNewTask} className="gap-1.5">
         <Plus className="w-3.5 h-3.5" />
